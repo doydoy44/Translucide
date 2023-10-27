@@ -1,7 +1,7 @@
 <?php
 
 // Si pas de dossier média définit on force la variable
-if(!@$GLOBALS['media_dir']) {
+if (!@$GLOBALS['media_dir']) {
     $GLOBALS['media_dir'] = 'media';
 }
 
@@ -25,15 +25,15 @@ function trimer($value)
 // Nettoie et encode les mots
 function encode($value, $separator = "-", $pass = null)
 {
-    if(!is_null($value)) {
+    if (!is_null($value)) {
         // Tableau des special chars PHP 7.2
         //$from = str_split(utf8_decode("ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñß@\’\"'_-&()=/*+$!:;,.\²~#?§µ%£°{[|`^]}¤€<>"));// SUPP 20/03/2023
         $from = str_split(mb_convert_encoding("ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñß@\’\"'_-&()=/*+$!:;,.\²~#?§µ%£°{[|`^]}¤€<>", 'ISO-8859-1', 'UTF-8'));
         $to = str_split("aaaaaaaaaaaaooooooooooooeeeeeeeecciiiiiiiiuuuuuuuuynnba                                         ");
-        
+
         // Si on doit laisser certains caractères
-        if(isset($pass) and @count($pass)) {
-            foreach($pass as $char) {
+        if (isset($pass) and @count($pass)) {
+            foreach ($pass as $char) {
                 $strpos = strpos(implode($from), $char);
                 $from[$strpos] = "";
                 $to[$strpos] = "";
@@ -44,11 +44,11 @@ function encode($value, $separator = "-", $pass = null)
         $value = strtolower(strtr(mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8'), implode($from), implode($to)));// Supp les caractères indésirables
 
 
-//		$value = trimer($value, " \t\n\r\0\x0B\xC2\xA0");// Supprime les espaces et espaces insecable de début et fin
-//		$value = preg_replace('/\t+/', $separator, $value);// Remplace les tabulations
-//		$value = preg_replace('/ {2,}/', $separator, $value);// Remplace les double espaces
-//		$value = preg_replace('/ /', $separator, $value);// Remplace les espaces simple
-//		//$value = preg_replace('/\xa0/', $separator, $value);// Remplace les espaces insecable [\xc2\xa0]
+        //		$value = trimer($value, " \t\n\r\0\x0B\xC2\xA0");// Supprime les espaces et espaces insecable de début et fin
+        //		$value = preg_replace('/\t+/', $separator, $value);// Remplace les tabulations
+        //		$value = preg_replace('/ {2,}/', $separator, $value);// Remplace les double espaces
+        //		$value = preg_replace('/ /', $separator, $value);// Remplace les espaces simple
+        //		//$value = preg_replace('/\xa0/', $separator, $value);// Remplace les espaces insecable [\xc2\xa0]
 
         $value = trimer($value, " \t\n\r\0\x0B\xC2\xA0");// Supprime les espaces et espaces insecable de début et fin
         $value = preg_replace('/\t+/', $separator, $value);// Remplace les tabulations
@@ -64,40 +64,40 @@ function encode($value, $separator = "-", $pass = null)
 function get_url($url_source = null)
 {
     // Si pas d'url forcé on donne l'url en cours complète
-    if(!$url_source) {
-        $url_source = (@$_SERVER['REQUEST_SCHEME'] ? $_SERVER['REQUEST_SCHEME'] : "http")."://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
+    if (!$url_source) {
+        $url_source = (@$_SERVER['REQUEST_SCHEME'] ? $_SERVER['REQUEST_SCHEME'] : "http") . "://" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
     }
 
     // Parse l'url pour ne garder que la partie rewrite sans le chemin de base du site
     $parse_url = parse_url($url_source);
-    $path = preg_replace("/^".addcslashes($GLOBALS['path'], "/")."*/", "", $parse_url['path']);
+    $path = preg_replace("/^" . addcslashes($GLOBALS['path'], "/") . "*/", "", $parse_url['path']);
 
     // Si l'url est vide : url = index
-    if(!encode($path)) {
-        $url = (isset($GLOBALS['static'])?'index':'home');
+    if (!encode($path)) {
+        $url = (isset($GLOBALS['static']) ? 'index' : 'home');
     }// @todo mettre que 'index' à terme 13/07/2020
     else {
         // Si il y a des filtres/page dans l'url
-        if(strstr($parse_url['path'], "/") or strstr($parse_url['path'], "page_")) {
+        if (strstr($parse_url['path'], "/") or strstr($parse_url['path'], "page_")) {
             $explode_path = explode("/", $path);
 
             // Home si le premier element est la nav par page
-            if(strstr($explode_path[0], "page_")) {
-                $url = (isset($GLOBALS['static'])?'index':'home');
+            if (strstr($explode_path[0], "page_")) {
+                $url = (isset($GLOBALS['static']) ? 'index' : 'home');
             }// @todo mettre que 'index' à terme
             else {
                 $url = $explode_path[0];// Url raçine
                 unset($explode_path[0]);// Supp la racine des filtres si dossier
             }
-            
-            foreach($explode_path as $cle => $dir) {
+
+            foreach ($explode_path as $cle => $dir) {
                 $dir = urldecode($dir);// Pour supprimer les %20 ..
 
                 $explode_dir = explode("_", $dir);
 
-                if($explode_dir[0]) {
-                    $GLOBALS['filter'][encode($explode_dir[0], "-", [".","'"])] =
-                        encode(preg_replace("/^".$explode_dir[0]."_/", "", $dir), "-", [".","_","'","@"]);
+                if ($explode_dir[0]) {
+                    $GLOBALS['filter'][encode($explode_dir[0], "-", [".", "'"])] =
+                        encode(preg_replace("/^" . $explode_dir[0] . "_/", "", $dir), "-", [".", "_", "'", "@"]);
                 }
             }
         } else {
@@ -113,26 +113,26 @@ function make_url($url, $filter = [])
 {
     $dir = "";
 
-    if(is_array($filter)) {
+    if (is_array($filter)) {
         // Force le domaine sur la variable défini
-        if(isset($filter['domaine'])) {
+        if (isset($filter['domaine'])) {
             $domaine = $filter['domaine'];
         }
         unset($filter['domaine']);
 
         // Force le chemin absolu
-        if(isset($filter['absolu'])) {
+        if (isset($filter['absolu'])) {
             $absolu = $filter['absolu'];
         }
         unset($filter['absolu']);
 
         // Création des dossier dans l'url en fonction des filtres
-        foreach($filter as $cle => $val) {
-            if($cle == "page" and $val == 1) {
+        foreach ($filter as $cle => $val) {
+            if ($cle == "page" and $val == 1) {
                 unset($filter['page']);
             }// Si Page == 1 on ne l'affiche pas dans l'url
-            elseif($val) {
-                $dir .= "/" . (($cle and $cle != $val) ? encode($cle)."_" : "") . encode($val, "-", [".","'","@","_"]);
+            elseif ($val) {
+                $dir .= "/" . (($cle and $cle != $val) ? encode($cle) . "_" : "") . encode($val, "-", [".", "'", "@", "_"]);
             }
         }
     }
@@ -140,26 +140,26 @@ function make_url($url, $filter = [])
     if ($url == "home" or $url == "index") {// @todo A terme supprimer "home" car on utilise "index" 13/07/2020
         $url = $GLOBALS['path'];
 
-        if(isset($domaine)) {
+        if (isset($domaine)) {
             $url = ($domaine === true ? $GLOBALS['home'] : $domaine);
         }
     } elseif (preg_match("/(http|https):\/\//", $url)) {// Si url externe on retourne l'url directement
         return $url;
     } else {
-        $url = encode($url, "-", ["#","/"]);
+        $url = encode($url, "-", ["#", "/"]);
 
-        if(isset($domaine)) {
-            $url = ($domaine === true ? $GLOBALS['home']:$domaine) . ltrim($url, "/");
+        if (isset($domaine)) {
+            $url = ($domaine === true ? $GLOBALS['home'] : $domaine) . ltrim($url, "/");
         }
     }
 
     // Si filtre ou page
-    if($dir) {
+    if ($dir) {
         $url = trim($url, "/") . $dir;
     }
 
     // Si on demande le chemin absolu
-    if(isset($absolu)) {
+    if (isset($absolu)) {
         $url = $GLOBALS['path'] . $url;
     }
 
@@ -177,41 +177,56 @@ function page($num_total, $page, $filter = [])
     }
 
     // Si navigation par page
-    if($num_total > $num_pp) {
+    if ($num_total > $num_pp) {
         ?>
-		<nav role="navigation"<?=(isset($filter['aria-label'])?' aria-label="'.htmlspecialchars($filter['aria-label']).'"':'')?>>
-			<ul class="page unstyled inbl man pan">		
-			<?php
-            
-                $num_page = ceil($num_total/$num_pp);
-                
+        <nav role="navigation"<?= (isset($filter['aria-label']) ? ' aria-label="' . htmlspecialchars($filter['aria-label']) . '"' : '') ?>>
+            <ul class="page unstyled inbl man pan">
+                <?php
+
+                $num_page = ceil($num_total / $num_pp);
+
         // Page 1
-        ?><li class="fl mrs mbs"><a href="<?=make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => "1", "domaine" => true]))?>" class="bt<?=($page == 1?' selected':'');?>"<?=($page == 1?' aria-current="page"':'')?>>1</a></li><?php
+        ?>
+                <li class="fl mrs mbs"><a
+                            href="<?= make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => "1", "domaine" => true])) ?>"
+                            class="bt<?= ($page == 1 ? ' selected' : ''); ?>"<?= ($page == 1 ? ' aria-current="page"' : '') ?>>1</a>
+                </li><?php
 
-        if($num_page > 10 and $page >= 10 and !isset($filter['full'])) {// + de 10 page
-            ?><li class="fl mrs mtt">...</li><?php
-                    
-                for($i = ($page - 1); $i <= ($page + 1) and $i < $num_page; $i++) {?>
-						<li class="fl mrs mbs"><a href="<?=make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => $i, "domaine" => true]))?>" class="bt<?=($page == $i?' selected':'');?>"<?=($page == $i?' aria-current="page"':'')?>><?=$i?></a></li>
-					<?php }
-                } else {// - de 10 page
-                    for($i = 2; $i <= (isset($filter['full'])?$num_page:10) and $i < $num_page; $i++) {?>
-						<li class="fl mrs mbs"><a href="<?=make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => $i, "domaine" => true]))?>" class="bt<?=($page == $i?' selected':'');?>"<?=($page == $i?' aria-current="page"':'')?>><?=$i?></a></li>
-					<?php }
-                    }
+        if ($num_page > 10 and $page >= 10 and !isset($filter['full'])) {// + de 10 page
+            ?>
+                    <li class="fl mrs mtt">...</li><?php
 
-        if($num_page > 10 and $page < ($num_page - 2) and !isset($filter['full'])) {?><li class="fl mrs">...</li><?php }
+            for ($i = ($page - 1); $i <= ($page + 1) and $i < $num_page; $i++) { ?>
+                        <li class="fl mrs mbs"><a
+                                    href="<?= make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => $i, "domaine" => true])) ?>"
+                                    class="bt<?= ($page == $i ? ' selected' : ''); ?>"<?= ($page == $i ? ' aria-current="page"' : '') ?>><?= $i ?></a>
+                        </li>
+                    <?php }
+            } else {// - de 10 page
+                for ($i = 2; $i <= (isset($filter['full']) ? $num_page : 10) and $i < $num_page; $i++) { ?>
+                        <li class="fl mrs mbs"><a
+                                    href="<?= make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => $i, "domaine" => true])) ?>"
+                                    class="bt<?= ($page == $i ? ' selected' : ''); ?>"<?= ($page == $i ? ' aria-current="page"' : '') ?>><?= $i ?></a>
+                        </li>
+                    <?php }
+                }
+
+        if ($num_page > 10 and $page < ($num_page - 2) and !isset($filter['full'])) { ?>
+                    <li class="fl mrs">...</li><?php }
 
         // Page final
-        ?><li class="fl mrs mbs"><a href="<?=make_url($res['url'], array_merge($GLOBALS['filter'], ['page' => $num_page, "domaine" => true]))?>" class="bt<?=($page == $num_page?' selected':'');?>"<?=($page == $num_page?' aria-current="page"':'')?>><?=$num_page?></a></li><?php
+        ?>
+                <li class="fl mrs mbs"><a
+                            href="<?= make_url($res['url'], array_merge($GLOBALS['filter'], ['page' => $num_page, "domaine" => true])) ?>"
+                            class="bt<?= ($page == $num_page ? ' selected' : ''); ?>"<?= ($page == $num_page ? ' aria-current="page"' : '') ?>><?= $num_page ?></a>
+                </li><?php
 
         ?>
-			</ul>
-		</nav>
-		<?php
+            </ul>
+        </nav>
+        <?php
     }
 }
-
 
 
 /********** LANGUAGE **********/
@@ -220,14 +235,14 @@ function page($num_total, $page, $filter = [])
 function get_lang($lang = '')
 {
     // Si la langue est déjà dans la session
-    if(isset($_SESSION['lang'])) {
+    if (isset($_SESSION['lang'])) {
         $lang = $_SESSION['lang'];
-    } elseif(!$lang and @$_SERVER['HTTP_ACCEPT_LANGUAGE']) { // Si pas de langue on prend la 1er langue du navigateur
+    } elseif (!$lang and @$_SERVER['HTTP_ACCEPT_LANGUAGE']) { // Si pas de langue on prend la 1er langue du navigateur
         preg_match_all('~([\w-]+)(?:[^,\d]+([\d.]+))?~', strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']), $matches, PREG_SET_ORDER);
         $explode = explode("-", $matches[0][1]);
         $lang = $explode[0];
     }
-    
+
     // Si la langue de l'utilisateur n'existe pas pour les contenus de ce site on charge la langue par défaut
     if (!in_array($lang, $GLOBALS['language'])) {
         $lang = $GLOBALS['language'][0];
@@ -245,19 +260,22 @@ function get_lang($lang = '')
 function load_translation($id)
 {
     switch ($id) {
-        case "api": $translation_file = "api/translation.php";
+        case "api":
+            $translation_file = "api/translation.php";
             break;
-        case "theme": $translation_file = "theme/".$GLOBALS['theme'].($GLOBALS['theme']?"/":"")."translation.php";
+        case "theme":
+            $translation_file = "theme/" . $GLOBALS['theme'] . ($GLOBALS['theme'] ? "/" : "") . "translation.php";
             break;
-        default: $translation_file = "plugin/".$id."/translation.php";
+        default:
+            $translation_file = "plugin/" . $id . "/translation.php";
             break;
     }
 
     // On récupère le fichier de traduction
-    @include($_SERVER['DOCUMENT_ROOT'].$GLOBALS['path'].$translation_file);
+    @include($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . $translation_file);
 
     // Ajoute la traduction au tableau des traductions
-    if(isset($add_translation)) {
+    if (isset($add_translation)) {
         add_translation($add_translation);
     }
 }
@@ -280,24 +298,24 @@ function add_translation($add_translation)
 function __($singulier, $pluriel = "", $num = 0)
 {
     // Traduction direct dans la fonction
-    if(is_array($singulier)) {
-        if(isset($singulier[key($singulier)][$GLOBALS['lang']])) {// Une traduction dans la langue courante
+    if (is_array($singulier)) {
+        if (isset($singulier[key($singulier)][$GLOBALS['lang']])) {// Une traduction dans la langue courante
             return $singulier[key($singulier)][$GLOBALS['lang']];
         }
         return key($singulier);
     }
-    if($num > 1) {
+    if ($num > 1) {
         $txt = $pluriel;
     } else {
         $txt = $singulier;
     }
 
     // Si une traduction existe
-    if(isset($GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang']])) {
+    if (isset($GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang']])) {
         return $GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang']];
     }
     // Si une langue alternative est définie et qu'une traduction existe
-    if(isset($GLOBALS['lang_alt']) and isset($GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang_alt']])) {
+    if (isset($GLOBALS['lang_alt']) and isset($GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang_alt']])) {
         return $GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang_alt']];
     }
 
@@ -311,13 +329,12 @@ function _e($singulier, $pluriel = "", $num = 0)
 }
 
 
-
 /********** CONTENT **********/
 
 // Contenu texte
 function txt($key = null, $filter = [])
 {
-    $key = ($key ? $key : "txt-".$GLOBALS['editkey']);
+    $key = ($key ? $key : "txt-" . $GLOBALS['editkey']);
 
     // S'il y a une valeur pour le filter mais que != tableau => c'est une class
     if (!is_array($filter)) {
@@ -325,63 +342,63 @@ function txt($key = null, $filter = [])
     }
 
     // Si contenu global on rapatri le contenu depuis la table méta (Anciennement "universel")
-    if(isset($filter['global'])) {
-        $sel = $GLOBALS['connect']->query("SELECT * FROM ". $GLOBALS['table_meta']." WHERE type='global' AND cle='".encode($key)."' LIMIT 1");
+    if (isset($filter['global'])) {
+        $sel = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_meta'] . " WHERE type='global' AND cle='" . encode($key) . "' LIMIT 1");
         $res = $sel->fetch_assoc();
 
         $GLOBALS['content'][$key] = $res['val'];
     }
 
-    echo"<".(isset($filter['tag'])? $filter['tag'] : "div");
+    echo "<" . (isset($filter['tag']) ? $filter['tag'] : "div");
 
-    echo" id='".encode($key)."'";
+    echo " id='" . encode($key) . "'";
 
-    echo" class='";
-    if(isset($filter['editable'])) {
+    echo " class='";
+    if (isset($filter['editable'])) {
         echo $filter['editable'];
     } else {
-        echo"editable";
+        echo "editable";
     }
-    if(isset($filter['class'])) {
-        echo" ".$filter['class'];
+    if (isset($filter['class'])) {
+        echo " " . $filter['class'];
     }
-    if(isset($filter['global'])) {
-        echo" global";
+    if (isset($filter['global'])) {
+        echo " global";
     }
-    if(isset($filter['lazy'])) {
-        echo" lazy";
+    if (isset($filter['lazy'])) {
+        echo " lazy";
     }
-    echo"'";
+    echo "'";
 
-    if(isset($filter['placeholder'])) {
-        echo" placeholder=\"".$filter['placeholder']."\"";
-    }
-
-    if(isset($filter['itemprop'])) {
-        echo" itemprop=\"".$filter['itemprop']."\"";
+    if (isset($filter['placeholder'])) {
+        echo " placeholder=\"" . $filter['placeholder'] . "\"";
     }
 
-    if(isset($filter['dir'])) {
-        echo" data-dir='".$filter['dir']."'";
+    if (isset($filter['itemprop'])) {
+        echo " itemprop=\"" . $filter['itemprop'] . "\"";
+    }
+
+    if (isset($filter['dir'])) {
+        echo " data-dir='" . $filter['dir'] . "'";
     }// Desitation de stockage du fichier
 
-    if(isset($filter['builder'])) {
-        echo" data-builder='".$filter['builder']."'";
+    if (isset($filter['builder'])) {
+        echo " data-builder='" . $filter['builder'] . "'";
     }
 
-    echo">";
+    echo ">";
 
-    if(isset($GLOBALS['content'][$key])) {
-        if(isset($filter['function'])) {
+    if (isset($GLOBALS['content'][$key])) {
+        if (isset($filter['function'])) {
             echo $filter['function']($GLOBALS['content'][$key]);
         } else {
             echo $GLOBALS['content'][$key];
         }
-    } elseif(isset($filter['default'])) {
+    } elseif (isset($filter['default'])) {
         echo $filter['default'];
     }
 
-    echo"</".(isset($filter['tag']) ? $filter['tag'] : "div").">";
+    echo "</" . (isset($filter['tag']) ? $filter['tag'] : "div") . ">";
 
     $GLOBALS['editkey']++;
 }
@@ -391,58 +408,60 @@ function txt($key = null, $filter = [])
 function h1($key = null, $filter = [])
 {
     // S'il y a une valeur pour le filter mais que != tableau => c'est une class
-    if(!is_array($filter)) {
+    if (!is_array($filter)) {
         $filter = ['class' => $filter];
     }
-    
+
     $filter['tag'] = __FUNCTION__;// Force le tag
-    
+
     txt($key, $filter);// Appel de la fonction d'origine
 }
+
 function h2($key = null, $filter = [])
 {
     // S'il y a une valeur pour le filter mais que != tableau => c'est une class
-    if(!is_array($filter)) {
+    if (!is_array($filter)) {
         $filter = ['class' => $filter];
     }
-    
+
     $filter['tag'] = __FUNCTION__;// Force le tag
-    
+
     txt($key, $filter);// Appel de la fonction d'origine
 }
+
 function h3($key = null, $filter = [])
 {
     // S'il y a une valeur pour le filter mais que != tableau => c'est une class
     if (!is_array($filter)) {
         $filter = ['class' => $filter];
     }
-    
+
     $filter['tag'] = __FUNCTION__;// Force le tag
-    
+
     txt($key, $filter);// Appel de la fonction d'origine
 }
+
 function span($key = null, $filter = [])
 {
     // S'il y a une valeur pour le filter mais que != tableau => c'est une class
     if (!is_array($filter)) {
         $filter = ['class' => $filter];
     }
-    
+
     $filter['tag'] = __FUNCTION__;// Force le tag
-    
+
     txt($key, $filter);// Appel de la fonction d'origine
 }
-
 
 
 // Contenu image/fichier
 function media($key = null, $filter = [])
 {
-    $key = ($key ? $key : "file-".$GLOBALS['editkey']);
+    $key = ($key ? $key : "file-" . $GLOBALS['editkey']);
 
     // Si contenu global on rapatri le contenu depuis la table méta
     if (isset($filter['global'])) {
-        $sel = $GLOBALS['connect']->query("SELECT * FROM ". $GLOBALS['table_meta']." WHERE type='global' AND cle='".encode($key)."' LIMIT 1");
+        $sel = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_meta'] . " WHERE type='global' AND cle='" . encode($key) . "' LIMIT 1");
         $res = $sel->fetch_assoc();
 
         $GLOBALS['content'][$key] = $res['val'];
@@ -450,13 +469,13 @@ function media($key = null, $filter = [])
 
 
     // Verification de la config de https pour crée le bon chemin (on force https dans les chemins)
-    if(@$_SERVER['REQUEST_SCHEME'] == 'https' and $GLOBALS['scheme'] != 'https://') {
+    if (@$_SERVER['REQUEST_SCHEME'] == 'https' and $GLOBALS['scheme'] != 'https://') {
         $GLOBALS['home'] = str_replace('http://', 'https://', $GLOBALS['home']);
     }
 
 
     // S'il y a une valeur pour le filter mais != tableau => c'est la taille de l'image
-    if(!is_array($filter)) {
+    if (!is_array($filter)) {
         $filter = ["size" => $filter];
     }
 
@@ -466,23 +485,23 @@ function media($key = null, $filter = [])
     }
 
     // Nom du fichier
-    if (isset($GLOBALS['content'][$key]) and $GLOBALS['content'][$key]!="") {
+    if (isset($GLOBALS['content'][$key]) and $GLOBALS['content'][$key] != "") {
         // Si c'est une url externe on pointe vers, sinon on clean et ajoute le nom du site courant
-        if(isset(parse_url($GLOBALS['content'][$key])['scheme'])) {
+        if (isset(parse_url($GLOBALS['content'][$key])['scheme'])) {
             $filename = $GLOBALS['content'][$key];
         } else {
-            $filename = $GLOBALS['home'].ltrim($GLOBALS['content'][$key], @(string)$GLOBALS['replace_path']);
+            $filename = $GLOBALS['home'] . ltrim($GLOBALS['content'][$key], @(string)$GLOBALS['replace_path']);
         }
     } else {
         $filename = "";
     }
 
-    if($filename) {
+    if ($filename) {
         // Extention du fichier
         $ext = pathinfo(explode("?", $filename)[0], PATHINFO_EXTENSION);
 
         // Recherche du type de fichier
-        switch($ext) {
+        switch ($ext) {
             case"jpg":
             case"jpeg":
             case"png":
@@ -498,86 +517,92 @@ function media($key = null, $filter = [])
                 $video = true;
                 break;
 
-            default: $fa = "doc";
+            default:
+                $fa = "doc";
                 break;
 
-            case"zip": $fa = "file-archive";
+            case"zip":
+                $fa = "file-archive";
                 break;
-            case"msword": $fa = "file-word";
+            case"msword":
+                $fa = "file-word";
                 break;
-            case"vnd.ms-excel": $fa = "file-excel";
+            case"vnd.ms-excel":
+                $fa = "file-excel";
                 break;
-            case"vnd.ms-powerpoint": $fa = "file-powerpoint";
+            case"vnd.ms-powerpoint":
+                $fa = "file-powerpoint";
                 break;
-            case"pdf": $fa = "file-pdf";
+            case"pdf":
+                $fa = "file-pdf";
                 break;
         }
     }
 
-    echo'<span';
+    echo '<span';
 
-    echo' id="'.encode($key).'"';
+    echo ' id="' . encode($key) . '"';
 
-    echo' class="';
-    if(isset($filter['editable'])) {
+    echo ' class="';
+    if (isset($filter['editable'])) {
         echo $filter['editable'];
     } else {
-        echo'editable-media';
+        echo 'editable-media';
     }
-    if(isset($filter['global']) and $filter['crop'] == true) {
-        echo' global';
+    if (isset($filter['global']) and $filter['crop'] == true) {
+        echo ' global';
     }
     //if(isset($size[0]) and isset($size[1])) echo' crop';
-    if(isset($filter['crop']) and $filter['crop'] == true) {
-        echo' crop';
+    if (isset($filter['crop']) and $filter['crop'] == true) {
+        echo ' crop';
     }
-    echo'"';
+    echo '"';
 
-    if(isset($filter['class'])) {
-        echo' data-class="'.$filter['class'].'"';
+    if (isset($filter['class'])) {
+        echo ' data-class="' . $filter['class'] . '"';
     }
-    if(isset($filter['dir'])) {
-        echo' data-dir="'.$filter['dir'].'"';
+    if (isset($filter['dir'])) {
+        echo ' data-dir="' . $filter['dir'] . '"';
     }// Desitation de stockage du fichier
-    if(isset($size[0])) {
-        echo' data-width="'.$size[0].'"';
+    if (isset($size[0])) {
+        echo ' data-width="' . $size[0] . '"';
     }
-    if(isset($size[1])) {
-        echo' data-height="'.$size[1].'"';
-    }
-
-    if(isset($size[0]) or isset($size[1])) { // @todo Vérifier si on met max-width ou width
-        echo' style="'.
-        (isset($size[0])?'max-width:'.$size[0].'px;':'').
-        (isset($size[1])?'max-height:'.$size[1].'px':'').
-        '"';
+    if (isset($size[1])) {
+        echo ' data-height="' . $size[1] . '"';
     }
 
-    if(isset($filter['placeholder'])) {
-        echo' placeholder="'.$filter['placeholder'].'"';
+    if (isset($size[0]) or isset($size[1])) { // @todo Vérifier si on met max-width ou width
+        echo ' style="' .
+            (isset($size[0]) ? 'max-width:' . $size[0] . 'px;' : '') .
+            (isset($size[1]) ? 'max-height:' . $size[1] . 'px' : '') .
+            '"';
     }
 
-    echo'>';
+    if (isset($filter['placeholder'])) {
+        echo ' placeholder="' . $filter['placeholder'] . '"';
+    }
 
-    if(isset($img)) {// C'est une image
+    echo '>';
+
+    if (isset($img)) {// C'est une image
         // Si on veux voir la version grande au clic
-        if(isset($filter['zoom'])) {
+        if (isset($filter['zoom'])) {
             $parse_url = parse_url($filename);
             parse_str($parse_url['query'], $get);
-            if(@$get['zoom']) {
-                echo'<a href="'.$get['zoom'].'">';
+            if (@$get['zoom']) {
+                echo '<a href="' . $get['zoom'] . '">';
             }
         }
 
-        echo'<img ';
+        echo '<img ';
 
         //srcset pour image adaptative
-        if(isset($filter['srcset'])) {
+        if (isset($filter['srcset'])) {
 
             //on récupère le chemin de l'image de référence à partir de laquelle on fait les miniatures
             $parse_url = parse_url($filename);
             parse_str($parse_url['query'], $get);
-            if(@$get['zoom']) {
+            if (@$get['zoom']) {
                 $source = $get['zoom'];
             } else {
                 $source = $filename;
@@ -588,98 +613,98 @@ function media($key = null, $filter = [])
             list($source_width, $source_height) = getimagesize($source);
 
             //ecriture de l'attribut
-            echo'srcset="';
+            echo 'srcset="';
             foreach ($filter['srcset'] as $key => $thumbnail_width) {
 
                 //si la taille de la miniature est inférieur à la taille de l'image source
-                if($source_width > $thumbnail_width) {
+                if ($source_width > $thumbnail_width) {
 
                     //calcul de la hauteur de la miniature
                     $thumbnail_height = round($thumbnail_width * $source_height / $source_width);
 
                     // on regarde s'il y a déjà une miniature existante
-                    $thumbnail_path = $pathinfo['dirname']."/resize/".$pathinfo['filename']."-".$thumbnail_width."x".$thumbnail_height.".".$pathinfo['extension'];
+                    $thumbnail_path = $pathinfo['dirname'] . "/resize/" . $pathinfo['filename'] . "-" . $thumbnail_width . "x" . $thumbnail_height . "." . $pathinfo['extension'];
                     $thumbnail_clean = parse_url($thumbnail_path, PHP_URL_PATH);
 
-                    if(file_exists($_SERVER['DOCUMENT_ROOT']. $GLOBALS['path'] .$thumbnail_clean)) {
+                    if (file_exists($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . $thumbnail_clean)) {
                         $thumbnail = $thumbnail_clean;
                     } else {
                         $thumbnail = resize($source, $thumbnail_width, $thumbnail_height);
                     }
-                            
+
                 } else {
                     $thumbnail = $source;
                 }
 
-                echo($key>0 ? ',' : '')
-                .parse_url($thumbnail, PHP_URL_PATH)
-                .' '.$thumbnail_width.'w';
+                echo($key > 0 ? ',' : '')
+                    . parse_url($thumbnail, PHP_URL_PATH)
+                    . ' ' . $thumbnail_width . 'w';
 
             }
-            echo'"';
+            echo '"';
 
         }
 
         // Si lazyloading on met une image transparente dans le src
-        if(isset($filter['lazy'])) {
-            echo'src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="'.$filename.'" loading="lazy"';
+        if (isset($filter['lazy'])) {
+            echo 'src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="' . $filename . '" loading="lazy"';
         } else {
-            echo'src="'.$filename.'"';
+            echo 'src="' . $filename . '"';
         }
 
-        if(isset($size[0]) or isset($size[1])) {
-            echo' style="';
-            if(isset($size[0])) {
-                echo'max-width: '.$size[0].'px;';
+        if (isset($size[0]) or isset($size[1])) {
+            echo ' style="';
+            if (isset($size[0])) {
+                echo 'max-width: ' . $size[0] . 'px;';
             }
-            if(isset($size[1])) {
-                echo'max-height: '.$size[1].'px;';
+            if (isset($size[1])) {
+                echo 'max-height: ' . $size[1] . 'px;';
             }
-            echo'"';
+            echo '"';
         }
 
         // On met en data l'url de la version grande
-        if(isset($filter['data-zoom'])) {
-            echo' data-zoom="'.@$filter['data-zoom'].'"';
+        if (isset($filter['data-zoom'])) {
+            echo ' data-zoom="' . @$filter['data-zoom'] . '"';
         }
 
-        if(isset($filter['itemprop'])) {
-            echo' itemprop="'.@$filter['itemprop'].'"';
+        if (isset($filter['itemprop'])) {
+            echo ' itemprop="' . @$filter['itemprop'] . '"';
         }
 
         // Image map
-        if(isset($filter['usemap'])) {
-            echo' usemap="'.@$filter['usemap'].'"';
+        if (isset($filter['usemap'])) {
+            echo ' usemap="' . @$filter['usemap'] . '"';
         }
 
         // Texte ALT
-        if(isset($GLOBALS['content'][$key.'-alt'])) {
-            echo' alt="'.$GLOBALS['content'][$key.'-alt'].'"';
+        if (isset($GLOBALS['content'][$key . '-alt'])) {
+            echo ' alt="' . $GLOBALS['content'][$key . '-alt'] . '"';
         } else {
-            echo' alt=""';
+            echo ' alt=""';
         }
 
-        echo' class="';
-        if(isset($filter['zoom'])) {
-            echo' zoom';
+        echo ' class="';
+        if (isset($filter['zoom'])) {
+            echo ' zoom';
         }
-        if(isset($filter['class'])) {
-            echo' '.$filter['class'];
+        if (isset($filter['class'])) {
+            echo ' ' . $filter['class'];
         }
-        echo'">';
+        echo '">';
 
         // Fin lien zoom
-        if(isset($filter['zoom'])) {
-            echo'</a>';
+        if (isset($filter['zoom'])) {
+            echo '</a>';
         }
-    } elseif(isset($video)) {// C'est une video
-        echo'<video'.(isset($size[0])?' width="'.$size[0].'"':'').' src="'.$filename.'" title="'.$GLOBALS['content'][$key].'" preload="none" controls></video>';
-    } elseif($filename) {// C'est un fichier
-        echo'<a href="'.$GLOBALS['content'][$key].'" target="_blank"><i class="fa fa-fw fa-'.$fa.' mega" title="'.$GLOBALS['content'][$key].'"></i></a>';
+    } elseif (isset($video)) {// C'est une video
+        echo '<video' . (isset($size[0]) ? ' width="' . $size[0] . '"' : '') . ' src="' . $filename . '" title="' . $GLOBALS['content'][$key] . '" preload="none" controls></video>';
+    } elseif ($filename) {// C'est un fichier
+        echo '<a href="' . $GLOBALS['content'][$key] . '" target="_blank"><i class="fa fa-fw fa-' . $fa . ' mega" title="' . $GLOBALS['content'][$key] . '"></i></a>';
     }
-            
 
-    echo'</span>';
+
+    echo '</span>';
 
     $GLOBALS['editkey']++;
 }
@@ -687,38 +712,38 @@ function media($key = null, $filter = [])
 // Image de fond de bloc
 function bg($key = null, $filter = [])
 {
-    $key = ($key ? $key : "bg-".$GLOBALS['editkey']);
+    $key = ($key ? $key : "bg-" . $GLOBALS['editkey']);
 
     // Si contenu global on rapatri le contenu depuis la table méta
-    if(isset($filter['global'])) {
-        $sel = $GLOBALS['connect']->query("SELECT * FROM ". $GLOBALS['table_meta']." WHERE type='global' AND cle='".encode($key)."' LIMIT 1");
+    if (isset($filter['global'])) {
+        $sel = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_meta'] . " WHERE type='global' AND cle='" . encode($key) . "' LIMIT 1");
         $res = $sel->fetch_assoc();
 
         $GLOBALS['content'][$key] = $res['val'];
     }
-    
+
     // Si pas d'array et qu'il y a une variable c'est que c'est un lazyload
     if (!is_array($filter) and isset($filter)) {
         $filter = ["lazy" => true];
     }
 
-    $url = (isset($GLOBALS['content'][$key]) ? $GLOBALS['home'].ltrim($GLOBALS['content'][$key], @$GLOBALS['replace_path']) : "");
+    $url = (isset($GLOBALS['content'][$key]) ? $GLOBALS['home'] . ltrim($GLOBALS['content'][$key], @$GLOBALS['replace_path']) : "");
 
-    echo" data-id='".encode($key)."' data-bg=\"".$url."\"";
+    echo " data-id='" . encode($key) . "' data-bg=\"" . $url . "\"";
 
-    if(isset($filter['global'])) {
-        echo" data-global='true'";
+    if (isset($filter['global'])) {
+        echo " data-global='true'";
     }
 
-    if(isset($filter['dir'])) {
-        echo" data-dir='".$filter['dir']."'";
+    if (isset($filter['dir'])) {
+        echo " data-dir='" . $filter['dir'] . "'";
     }// Desitation de stockage du fichier
 
     // Si lazy load des images de fond
-    if(isset($filter['lazy'])) {
-        echo' data-lazy="bg"';
-    } elseif($url) {
-        echo' style="background-image: url(\''.$url.'\')"';
+    if (isset($filter['lazy'])) {
+        echo ' data-lazy="bg"';
+    } elseif ($url) {
+        echo ' style="background-image: url(\'' . $url . '\')"';
     }
 
     $GLOBALS['editkey']++;
@@ -727,14 +752,14 @@ function bg($key = null, $filter = [])
 // Bloc de contenu générique duplicable
 function module($module = "module", $content = null)
 {
-    if($content == null) {
+    if ($content == null) {
         $content = $GLOBALS['content'];
     }
-    
+
     // Extrait les données module du tableau des contenu
     $keys = array_keys($content);
-    foreach($keys as $key) {
-        if(preg_match("/^".$module."-/", $key) == 1) {
+    foreach ($keys as $key) {
+        if (preg_match("/^" . $module . "-/", $key) == 1) {
             // Récupère le denier chiffre (numéro d'occurance)
             preg_match('/(\d+)(?!.*\d)/', $key, $match);
             $num_module = @$match[1];
@@ -754,7 +779,7 @@ function module($module = "module", $content = null)
             //$type_module = rtrim($type_num_module, "-".$num_module);
 
             // Si une variable dans la zone originale duplicable (0) on la raz par sécurité
-            if($num_module == 0) {
+            if ($num_module == 0) {
                 $content[$key] = "";
             }
 
@@ -762,7 +787,7 @@ function module($module = "module", $content = null)
             $array_module[$module][$num_module][$type_module] = $content[$key];
 
             // Force le contenu du bloc vide duplicable (0) à vide
-            if($num_module == 0) {
+            if ($num_module == 0) {
                 $GLOBALS['content'][$key] = '';
             }
 
@@ -782,11 +807,11 @@ function module($module = "module", $content = null)
 // Contenu champ checkbox
 function checkbox($key = null, $filter = [])
 {
-    $key = ($key ? $key : "checkbox-".$GLOBALS['editkey']);
+    $key = ($key ? $key : "checkbox-" . $GLOBALS['editkey']);
 
     // fa-check/fa-close => fa-ok/fa-cancel
-    echo"<i class='".(isset($filter['editable'])?$filter['editable']:"editable-checkbox")." fa fa-fw ".((isset($GLOBALS['content'][$key]) and $GLOBALS['content'][$key] == true) ? "fa-ok yes" : "fa-cancel no") . (isset($filter['class'])?" ".$filter['class']:"")."' id='".encode($key)."'></i>";
-    
+    echo "<i class='" . (isset($filter['editable']) ? $filter['editable'] : "editable-checkbox") . " fa fa-fw " . ((isset($GLOBALS['content'][$key]) and $GLOBALS['content'][$key] == true) ? "fa-ok yes" : "fa-cancel no") . (isset($filter['class']) ? " " . $filter['class'] : "") . "' id='" . encode($key) . "'></i>";
+
     $GLOBALS['editkey']++;
 }
 
@@ -799,57 +824,57 @@ function radio($key = null, $name = null, $checked = null)
 // Contenu champ select
 function select($key = null, $filter = [])
 {
-    $key = ($key ? $key : "select-".$GLOBALS['editkey']);
+    $key = ($key ? $key : "select-" . $GLOBALS['editkey']);
 
-    if(!is_array($filter)) {
+    if (!is_array($filter)) {
         $filter = ["option" => $filter];
     }
 
     $option_decode = json_decode($filter['option'], true);
 
     // inverse les clés et les valeurs
-    if(@$filter['flip']) {
+    if (@$filter['flip']) {
         $option_decode = array_flip($option_decode);
         $filter['option'] = json_encode($option_decode, JSON_UNESCAPED_UNICODE);
     }
 
-    if(isset($GLOBALS['content'][$key]) and isset($option_decode[$GLOBALS['content'][$key]])) {
+    if (isset($GLOBALS['content'][$key]) and isset($option_decode[$GLOBALS['content'][$key]])) {
         $selected_key = $GLOBALS['content'][$key];
         $selected_option = $option_decode[$GLOBALS['content'][$key]];
     } else {
         $selected_key = key($option_decode);
-        if($selected_key) {
+        if ($selected_key) {
             $selected_option = $option_decode[$selected_key];
         }
     }
 
-    echo"<".(isset($filter['tag'])?$filter['tag']:"span").(isset($filter['href'])?' href="'.$filter['href'].'"':'')." id='".encode($key)."' class='".(isset($filter['editable'])?$filter['editable']:"editable-select") . (isset($filter['class'])?" ".$filter['class']:"")."' data-option='".str_ireplace("'", "&apos;", $filter['option'])."' data-selected=\"".$selected_key."\">".@$selected_option."</".(isset($filter['tag'])?$filter['tag']:"span").">";
-    
+    echo "<" . (isset($filter['tag']) ? $filter['tag'] : "span") . (isset($filter['href']) ? ' href="' . $filter['href'] . '"' : '') . " id='" . encode($key) . "' class='" . (isset($filter['editable']) ? $filter['editable'] : "editable-select") . (isset($filter['class']) ? " " . $filter['class'] : "") . "' data-option='" . str_ireplace("'", "&apos;", $filter['option']) . "' data-selected=\"" . $selected_key . "\">" . @$selected_option . "</" . (isset($filter['tag']) ? $filter['tag'] : "span") . ">";
+
     $GLOBALS['editkey']++;
 }
 
 // Contenu champ input
 function input($key = null, $filter = null)
 {
-    $key = ($key ? $key : "input-".$GLOBALS['editkey']);
+    $key = ($key ? $key : "input-" . $GLOBALS['editkey']);
 
-    if(!is_array($filter)) {
+    if (!is_array($filter)) {
         $filter = ["class" => $filter];
     }
-    if(!isset($filter['type'])) {
+    if (!isset($filter['type'])) {
         $filter['type'] = "text";
     }
 
-    echo'<input type="'.$filter['type'].'" id="'.encode($key).'"';
+    echo '<input type="' . $filter['type'] . '" id="' . encode($key) . '"';
 
-    if(@$filter['name']) {
-        echo' name="'.$filter['name'].'"';
+    if (@$filter['name']) {
+        echo ' name="' . $filter['name'] . '"';
     }
 
-    echo' value="';
+    echo ' value="';
 
-    if(isset($GLOBALS['content'][$key])) {
-        if(@$filter['type'] == 'number') {
+    if (isset($GLOBALS['content'][$key])) {
+        if (@$filter['type'] == 'number') {
             echo str_replace(',', '.', $GLOBALS['content'][$key]);
         } else {
             echo $GLOBALS['content'][$key];
@@ -857,64 +882,64 @@ function input($key = null, $filter = null)
     } else {
         echo @$filter['default'];
     }
-    
-    echo'"';
+
+    echo '"';
 
 
-    echo' class="editable-input '.@$filter['class'].'"';
+    echo ' class="editable-input ' . @$filter['class'] . '"';
 
-    if($filter['type'] == "checkbox" and @$GLOBALS['content'][$key] == true) {
-        echo' checked="checked"';
-    } elseif($filter['type'] == "radio" and @$filter['name'] and (@$GLOBALS['content'][$filter['name']] == $key or (!@$GLOBALS['content'][$filter['name']] and $filter['checked']))) {
-        echo' checked="checked"';
-    }
-
-    if(isset($filter['placeholder'])) {
-        echo' placeholder="'.$filter['placeholder'].'"';
-    }
-    if(@$filter['autocomplete'] == 'off') {
-        echo' autocomplete="off"';
-    }
-    
-    if(@$filter['readonly']) {
-        echo' readonly';
-    }
-    if(@$filter['required']) {
-        echo' required';
+    if ($filter['type'] == "checkbox" and @$GLOBALS['content'][$key] == true) {
+        echo ' checked="checked"';
+    } elseif ($filter['type'] == "radio" and @$filter['name'] and (@$GLOBALS['content'][$filter['name']] == $key or (!@$GLOBALS['content'][$filter['name']] and $filter['checked']))) {
+        echo ' checked="checked"';
     }
 
-    echo'>';
+    if (isset($filter['placeholder'])) {
+        echo ' placeholder="' . $filter['placeholder'] . '"';
+    }
+    if (@$filter['autocomplete'] == 'off') {
+        echo ' autocomplete="off"';
+    }
+
+    if (@$filter['readonly']) {
+        echo ' readonly';
+    }
+    if (@$filter['required']) {
+        echo ' required';
+    }
+
+    echo '>';
 
     // Si autocomplete
-    if(isset($filter['autocomplete']) and $filter['autocomplete'] != 'off') {?>
-		<script>
-			edit.push(function() {	
-				$("#<?=encode($key)?>").autocomplete({
-					source: <?='["'.implode('","', $filter['autocomplete']).'"]';?>,
-					minLength: 0,
-				}).focus(function () {
-					$(this).autocomplete("search");
-				});
-			});
-		</script>
-	<?php }
-    
+    if (isset($filter['autocomplete']) and $filter['autocomplete'] != 'off') { ?>
+        <script>
+          edit.push(function () {
+            $("#<?=encode($key)?>").autocomplete({
+              source: <?='["' . implode('","', $filter['autocomplete']) . '"]';?>,
+              minLength: 0,
+            }).focus(function () {
+              $(this).autocomplete("search");
+            });
+          });
+        </script>
+    <?php }
+
     $GLOBALS['editkey']++;
 }
 
 // Lien éditable
 function href($key = null, $target = null)
 {
-    $key = ($key ? $key : "href-".$GLOBALS['editkey']);
+    $key = ($key ? $key : "href-" . $GLOBALS['editkey']);
 
-    if(isset($GLOBALS['content'][$key])) {
-        echo'href="'.$GLOBALS['content'][$key].'" ';
+    if (isset($GLOBALS['content'][$key])) {
+        echo 'href="' . $GLOBALS['content'][$key] . '" ';
     }
 
-    echo'data-href="'.encode($key).'" ';
+    echo 'data-href="' . encode($key) . '" ';
 
-    if($target == 'file' and strstr(@$GLOBALS['content'][$key], ".")) {
-        echo'target="_blank"';
+    if ($target == 'file' and strstr(@$GLOBALS['content'][$key], ".")) {
+        echo 'target="_blank"';
     }
 
     $GLOBALS['editkey']++;
@@ -925,40 +950,40 @@ function tag($key = null, $filter = [])
 {
     $key = encode($key ? $key : "tag");
 
-    echo'<'
-    .(isset($filter['tag'])?$filter['tag']:"nav")
-    .' id="'.$key.'" class="editable-tag'.(isset($filter['class'])?" ".$filter['class'] : '').'"'
-    .(isset($filter['placeholder'])?' placeholder="'.$filter['placeholder'].'"' : '')
-    .(isset($filter['aria-label'])?' aria-label="'.$filter['aria-label'].'"' : '')
-    .(isset($filter['separator'])?' data-separator="'.$filter['separator'].'"' : '')
-    .(isset($filter['itemprop'])?' itemprop="'.$filter['itemprop'].'"' : '')
-    .((!isset($filter['tag']) or @$filter['tag']=='nav')?' role="navigation"' : '')
-    .'>';
+    echo '<'
+        . (isset($filter['tag']) ? $filter['tag'] : "nav")
+        . ' id="' . $key . '" class="editable-tag' . (isset($filter['class']) ? " " . $filter['class'] : '') . '"'
+        . (isset($filter['placeholder']) ? ' placeholder="' . $filter['placeholder'] . '"' : '')
+        . (isset($filter['aria-label']) ? ' aria-label="' . $filter['aria-label'] . '"' : '')
+        . (isset($filter['separator']) ? ' data-separator="' . $filter['separator'] . '"' : '')
+        . (isset($filter['itemprop']) ? ' itemprop="' . $filter['itemprop'] . '"' : '')
+        . ((!isset($filter['tag']) or @$filter['tag'] == 'nav') ? ' role="navigation"' : '')
+        . '>';
 
     $i = 1;
-    $sel_tag = $GLOBALS['connect']->query("SELECT * FROM ".$GLOBALS['table_tag']." WHERE id='".(int)$GLOBALS['id']."' AND zone='".$key."' AND lang='".$GLOBALS['lang']."' ORDER BY ordre ASC LIMIT 10");
-    while($res_tag = $sel_tag->fetch_assoc()) {
+    $sel_tag = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_tag'] . " WHERE id='" . (int)$GLOBALS['id'] . "' AND zone='" . $key . "' AND lang='" . $GLOBALS['lang'] . "' ORDER BY ordre ASC LIMIT 10");
+    while ($res_tag = $sel_tag->fetch_assoc()) {
         $GLOBALS['tags'][$res_tag['encode']] = $res_tag['name'];
 
         // Ajout de séparateur
-        if(@$filter['tag']!='ul' and $i > 1) {
-            echo(@$filter['separator']?$filter['separator']:', ');
+        if (@$filter['tag'] != 'ul' and $i > 1) {
+            echo(@$filter['separator'] ? $filter['separator'] : ', ');
         }
 
         // Si ul
-        if(@$filter['tag']=='ul') {
+        if (@$filter['tag'] == 'ul') {
             echo '<li>';
         }
 
         // Pas de lien ?
-        if(@$filter['href']===false) {
-            echo'<span>'.$res_tag['name'].'</span>';
+        if (@$filter['href'] === false) {
+            echo '<span>' . $res_tag['name'] . '</span>';
         } else {
-            echo'<a href="'.make_url($key, [$res_tag['encode'], 'domaine' => true]).'" class="tdn">'.$res_tag['name'].'</a>';
+            echo '<a href="' . make_url($key, [$res_tag['encode'], 'domaine' => true]) . '" class="tdn">' . $res_tag['name'] . '</a>';
         }
 
         // Si ul
-        if(@$filter['tag']=='ul') {
+        if (@$filter['tag'] == 'ul') {
             echo '</li>';
         }
 
@@ -967,14 +992,13 @@ function tag($key = null, $filter = [])
         $i++;
     }
 
-    echo'</'.(isset($filter['tag']) ? $filter['tag'] : "nav").'>';
+    echo '</' . (isset($filter['tag']) ? $filter['tag'] : "nav") . '>';
 
     // Si on veut choisir l'ordre du tag
-    if(isset($filter['ordre'])) {
-        echo'<input type="number" data-zone="'.$key.'" class="editable-tag-ordre" value="'.(is_numeric($filter['ordre'])?$filter['ordre']:$ordre).'" size="2" title="'.$filter['ordre'].'"'.(is_numeric($filter['ordre'])?' readonly':'').'>';
+    if (isset($filter['ordre'])) {
+        echo '<input type="number" data-zone="' . $key . '" class="editable-tag-ordre" value="' . (is_numeric($filter['ordre']) ? $filter['ordre'] : $ordre) . '" size="2" title="' . $filter['ordre'] . '"' . (is_numeric($filter['ordre']) ? ' readonly' : '') . '>';
     }
 }
-
 
 
 /********** SÉCURISATION **********/
@@ -983,8 +1007,8 @@ function secure_value($value)
 {
 
     // htmlentities htmlspecialchars
-    if(is_array($value)) {
-        foreach($value as $cle => $val) {
+    if (is_array($value)) {
+        foreach ($value as $cle => $val) {
             $value[$cle] = trim(htmlspecialchars($val, ENT_QUOTES));
         }
     } else {
@@ -993,7 +1017,6 @@ function secure_value($value)
 
     return $value;
 }
-
 
 
 /********** CONNEXION **********/
@@ -1006,7 +1029,7 @@ function curl($url, $params = null)
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36');
-    if($params) {
+    if ($params) {
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
     }
     $return = curl_exec($curl);
@@ -1023,19 +1046,19 @@ function curl($url, $params = null)
 function hash_pwd($pwd, $salt = null)
 {
     // Création du salt unique a cet utilisateur char(16)
-    if(!$salt) {
+    if (!$salt) {
         $unique_salt = dechex(mt_rand(0, 2147483647)) . dechex(mt_rand(0, 2147483647));
     }// @todo: peut-etre remplacer cette fonction par make_pwd
     else {
         $unique_salt = $salt;
     }
-        
+
     // Boucle pour encoder x fois le pwd avec le salt unique
-    for($i = 0; $i < $GLOBALS['pwd_hash_loop']; $i++) {
+    for ($i = 0; $i < $GLOBALS['pwd_hash_loop']; $i++) {
         $pwd = hash('sha256', $pwd . $unique_salt . $GLOBALS['priv_hash']);
     }
 
-    if($salt) {
+    if ($salt) {
         return $pwd;// Retour pour comparaison
     }
     return [$pwd, $unique_salt];// Retour pour stockage
@@ -1046,17 +1069,17 @@ function make_pwd($length = 12, $special_chars = false, $extra_special_chars = f
 {
     $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    if($special_chars) {
+    if ($special_chars) {
         $chars .= "!@#%^&*()";
     }//$ <= Créé parfois un bug : crée une variable php
 
-    if($extra_special_chars) {
+    if ($extra_special_chars) {
         $chars .= "-_ []{}<>~`+=,.;:/?|";
     }
 
     $password = "";
 
-    for($i = 0; $i < $length; $i++) {
+    for ($i = 0; $i < $length; $i++) {
         $password .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
     }
 
@@ -1068,7 +1091,7 @@ function nonce($session = null)
 {
     $nonce = hash("sha256", uniqid(mt_rand(), true));
 
-    if($session) {
+    if ($session) {
         $_SESSION[$session] = $nonce;
     }
 
@@ -1081,11 +1104,11 @@ function ip()
     $ip = $_SERVER['REMOTE_ADDR'];
 
     // Ensuite, nous utilisons plusieurs en-têtes HTTP pour empêcher le détournement de session des utilisateurs derrière le même proxy
-    if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = $ip.'_'.$_SERVER['HTTP_X_FORWARDED_FOR'];
+    if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ip = $ip . '_' . $_SERVER['HTTP_X_FORWARDED_FOR'];
     }
-    if(isset($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $ip.'_'.$_SERVER['HTTP_CLIENT_IP'];
+    if (isset($_SERVER['HTTP_CLIENT_IP'])) {
+        $ip = $ip . '_' . $_SERVER['HTTP_CLIENT_IP'];
     }
 
     return $ip;
@@ -1095,44 +1118,44 @@ function ip()
 function token($uid, $email = null, $auth = null) // @todo: Vérif l'intérêt de mettre le mail et pas le name ou rien
 {
     // Si la fonction de memorisation de connexion de l'utilisateur et coché
-    if(isset($_POST['rememberme'])) {
+    if (isset($_POST['rememberme'])) {
         setcookie("rememberme", encode($_POST['rememberme']), 0, $GLOBALS['path'], $GLOBALS['domain']);
         $_COOKIE['rememberme'] = encode($_POST['rememberme']);
     }
 
     // Date d'expiration (si on ne mémorise pas l'utilisateur on crée une session de 30min
-    $time = time() + ((isset($_COOKIE['rememberme']) and $_COOKIE['rememberme'] == "false") ? (30*60) : $GLOBALS['session_expiration']);
+    $time = time() + ((isset($_COOKIE['rememberme']) and $_COOKIE['rememberme'] == "false") ? (30 * 60) : $GLOBALS['session_expiration']);
 
     // Id de l'utilisateur
     $_SESSION['uid'] = (int)$uid;
-    
+
     // Nom de l'utilisateur
-    if($email) {
+    if ($email) {
         $_SESSION['email'] = $email;
     }
 
     // Cookie+Session pour connaitre les autorisations utilisateur
-    if($auth) {
+    if ($auth) {
         $array_auth = explode(",", $auth);
-        foreach($array_auth as $cle => $val) {
+        foreach ($array_auth as $cle => $val) {
             $_SESSION['auth'][$val] = true;
         }
         setcookie("auth", encode($auth, ",", ["-"]), $time, $GLOBALS['path'], $GLOBALS['domain']);
     }
-    
+
     // Date d'expiration du login
     $_SESSION['expires'] = $time;
-    
+
     // Faire en sorte que le token soit plus complet et autonome sans trop de variable dans la session
     $_SESSION['token'] = $token = hash("sha256", $_SESSION['uid'] . $_SESSION['expires'] . ip() . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SERVER_NAME'] . $GLOBALS['pub_hash']);
-    
+
     // Niveau de sécurité élever, on enregistre le token dans la bdd
-    if($GLOBALS['security'] == 'high') {
-        if(!$GLOBALS['connect']) {
+    if ($GLOBALS['security'] == 'high') {
+        if (!$GLOBALS['connect']) {
             include_once("db.php");
         }// Connexion à la db
 
-        $GLOBALS['connect']->query("UPDATE ".$GLOBALS['table_user']." SET token='".$token."' WHERE id='".(int)$uid."'");
+        $GLOBALS['connect']->query("UPDATE " . $GLOBALS['table_user'] . " SET token='" . $token . "' WHERE id='" . (int)$uid . "'");
     }
 
     return $token;
@@ -1150,7 +1173,7 @@ function token_light($uid, $salt)
 function token_check($token)
 {
     // @todo verif si ce n'est pas ça qui crée un bug collatéral de perte de session
-    if(isset($_SESSION['uid']) and $token == hash("sha256", $_SESSION['uid'] . @$_SESSION['expires'] . ip() . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SERVER_NAME'] . $GLOBALS['pub_hash']) and time() < $_SESSION['expires']) {
+    if (isset($_SESSION['uid']) and $token == hash("sha256", $_SESSION['uid'] . @$_SESSION['expires'] . ip() . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SERVER_NAME'] . $GLOBALS['pub_hash']) and time() < $_SESSION['expires']) {
         // On update la date d'expiration de la session
         token($_SESSION['uid'], $_SESSION['email']);
 
@@ -1170,15 +1193,15 @@ function login($level = 'low', $auth = null, $quiet = null)
 
     // Vérifie que la personne qui a posté le formulaire a bien la variable de session de protection contre les CSRF
     $csrf = false;
-    if(isset($_SESSION['nonce']) and $_SESSION['nonce'] != @$_REQUEST['nonce']) {
+    if (isset($_SESSION['nonce']) and $_SESSION['nonce'] != @$_REQUEST['nonce']) {
         $csrf = true;
     }
-    
+
     // Pas de hack on vérifie l'utilisateur
-    if(!$csrf) {
+    if (!$csrf) {
         // On se log avec le formulaire donc on check password & mail
-        if(isset($_POST['email']) and isset($_POST['password'])) {
-            if(!isset($GLOBALS['connect'])) {
+        if (isset($_POST['email']) and isset($_POST['password'])) {
+            if (!isset($GLOBALS['connect'])) {
                 include_once("db.php");
             }// Connexion à la db
 
@@ -1190,23 +1213,23 @@ function login($level = 'low', $auth = null, $quiet = null)
             $email = $GLOBALS['connect']->real_escape_string($email);
 
             // Extraction des données de l'utilisateur
-            $sel = $GLOBALS['connect']->query("SELECT * FROM ".$GLOBALS['table_user']." WHERE email='".$email."' ".($level == 'low' ? "" : "AND state='active'")." LIMIT 1");
+            $sel = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_user'] . " WHERE email='" . $email . "' " . ($level == 'low' ? "" : "AND state='active'") . " LIMIT 1");
             $res = $sel->fetch_assoc();
 
-            if(@$res['email']) {
+            if (@$res['email']) {
                 // Création d'un token maison
-                if($res['password'] == hash_pwd($_POST['password'], $res['salt'])) {
+                if ($res['password'] == hash_pwd($_POST['password'], $res['salt'])) {
                     $array_diff = array_diff(explode(",", (string)$auth), explode(",", $res['auth']));
-                    if(isset($auth) and !empty($array_diff)) {// Vérifie les auth d'utilisateur si c'est demandée
+                    if (isset($auth) and !empty($array_diff)) {// Vérifie les auth d'utilisateur si c'est demandée
                         $msg = __("Bad credential");
                         logout();
-                    } elseif($token = token($res['id'], $res['email'], $res['auth'])) {// Tout est ok on crée le token
+                    } elseif ($token = token($res['id'], $res['email'], $res['auth'])) {// Tout est ok on crée le token
                         // Création d'un token light : permet une vérif au changement de mdp et permet log sur plusieurs machines
-                        if($GLOBALS['security'] != 'high') {
+                        if ($GLOBALS['security'] != 'high') {
                             $token_light = token_light($res['id'], $res['salt']);
-                            $GLOBALS['connect']->query("UPDATE LOW_PRIORITY ".$GLOBALS['table_user']." SET token='".$token_light."' WHERE id='".$res['id']."'");
+                            $GLOBALS['connect']->query("UPDATE LOW_PRIORITY " . $GLOBALS['table_user'] . " SET token='" . $token_light . "' WHERE id='" . $res['id'] . "'");
                         }
-                        
+
                         // On est logé !
                         return true;
                     }
@@ -1218,24 +1241,23 @@ function login($level = 'low', $auth = null, $quiet = null)
                 $msg = __("Connection error");//Password error
                 logout();
             }
-        }
-        // Sinon on vérifie la validité du token et s'il n'a pas expiré
-        elseif(isset($_SESSION['token'])) {
-            if($level == 'medium' and $GLOBALS['security'] != 'high') {// Vérification mode moyen
-                if(!token_check($_SESSION['token'])) {// Vérification du contenu du token
+        } // Sinon on vérifie la validité du token et s'il n'a pas expiré
+        elseif (isset($_SESSION['token'])) {
+            if ($level == 'medium' and $GLOBALS['security'] != 'high') {// Vérification mode moyen
+                if (!token_check($_SESSION['token'])) {// Vérification du contenu du token
                     $msg = __("Token error");
                     logout();
-                } elseif(isset($auth)) {// Vérifie les autorisations utilisateur dans la bdd si c'est demandée
-                    if(!isset($GLOBALS['connect'])) {
+                } elseif (isset($auth)) {// Vérifie les autorisations utilisateur dans la bdd si c'est demandée
+                    if (!isset($GLOBALS['connect'])) {
                         include_once("db.php");
                     }// Connexion à la db
 
                     // Extraction des données de l'utilisateur
-                    $sel = $GLOBALS['connect']->query("SELECT auth FROM ".$GLOBALS['table_user']." WHERE id='".(int)$_SESSION['uid']."' AND state='active' LIMIT 1");
+                    $sel = $GLOBALS['connect']->query("SELECT auth FROM " . $GLOBALS['table_user'] . " WHERE id='" . (int)$_SESSION['uid'] . "' AND state='active' LIMIT 1");
                     $res = $sel->fetch_assoc();
 
                     $array_diff = array_diff(explode(",", $auth), explode(",", $res['auth']));
-                    if(!empty($array_diff)) {
+                    if (!empty($array_diff)) {
                         $msg = __("Bad credential");
                         logout();
                     } else {
@@ -1244,24 +1266,24 @@ function login($level = 'low', $auth = null, $quiet = null)
                 } else {
                     return true;
                 }
-            } elseif(($GLOBALS['security'] == 'high' or $level == 'high') and token_check($_SESSION['token'])) {// Comparaison avec le token dans la bdd
-                if(!isset($GLOBALS['connect'])) {
+            } elseif (($GLOBALS['security'] == 'high' or $level == 'high') and token_check($_SESSION['token'])) {// Comparaison avec le token dans la bdd
+                if (!isset($GLOBALS['connect'])) {
                     include_once("db.php");
                 }// Connexion à la db
 
                 @session_regenerate_id(true);// Supprime l'ancienne session
 
-                $sel = $GLOBALS['connect']->query("SELECT auth, token FROM ".$GLOBALS['table_user']." WHERE id='".(int)$_SESSION['uid']."' AND state='active' LIMIT 1");
+                $sel = $GLOBALS['connect']->query("SELECT auth, token FROM " . $GLOBALS['table_user'] . " WHERE id='" . (int)$_SESSION['uid'] . "' AND state='active' LIMIT 1");
                 $res = $sel->fetch_assoc();
-                
+
                 $array_diff = array_diff(explode(",", $auth), explode(",", $res['auth']));
-                if(isset($auth) and !empty($array_diff)) {// Vérifie les autorisations
+                if (isset($auth) and !empty($array_diff)) {// Vérifie les autorisations
                     $msg = __("Bad credential");
                     logout();
-                } elseif($GLOBALS['security'] == 'high' and $res['token'] == $_SESSION['token']) {
+                } elseif ($GLOBALS['security'] == 'high' and $res['token'] == $_SESSION['token']) {
                     return true;
                 }// Sécurité haute forcée dans la config
-                elseif($level == 'high' and $res['token'] == $_SESSION['token_light']) {
+                elseif ($level == 'high' and $res['token'] == $_SESSION['token_light']) {
                     return true;
                 }// Verification du token light (changement de pwd...)
                 else {
@@ -1282,92 +1304,92 @@ function login($level = 'low', $auth = null, $quiet = null)
 
 
     // Si pas de token ou si le login échoue on lance la dialog de connexion et exit l'action courante
-    if(!isset($_SESSION['token']) and !$quiet) {
+    if (!isset($_SESSION['token']) and !$quiet) {
         ?>
-		<link rel="stylesheet" href="<?=$GLOBALS['jquery_ui_css']?>">
+        <link rel="stylesheet" href="<?= $GLOBALS['jquery_ui_css'] ?>">
 
-		<link rel="stylesheet" href="<?=$GLOBALS['path']?>api/lucide.css">
+        <link rel="stylesheet" href="<?= $GLOBALS['path'] ?>api/lucide.css">
 
-		<script>
-			// Ouverture de la dialog de connexion
-			$(function()
-			{
-				//$(".ui-dialog-content").dialog("close");// On ferme les dialogs en cours
+        <script>
+          // Ouverture de la dialog de connexion
+          $(function () {
+            //$(".ui-dialog-content").dialog("close");// On ferme les dialogs en cours
 
-				if(typeof tosave == 'function') tosave();// Mode : A sauvegarder
-				
-				// Chargement de Jquery UI
-				$.ajax({
-			        url: "<?=$GLOBALS['jquery_ui']?>",
-			        dataType: 'script',
-			        cache: true,
-					success: function()// Si Jquery UI bien charger on charge la dialog de choix de login
-					{ 						
-						// On ferme la dialog de connexion s'il y en a une d'ouvert
-						if($("#dialog-connect").length) $("#dialog-connect").dialog("close");
-						
-						// On ouvre la dialog de choix du système de login et affiche une erreur
-						$.ajax({
-							url: "<?=$GLOBALS['path']?>api/ajax.php?mode=internal-login", 
-							data: {
-								callback: "<?=(isset($_REQUEST['callback']) ? encode($_REQUEST['callback'], "_") : "")?>",
-								msg: "<?=htmlspecialchars((isset($msg) ? $msg : ""));?>"
-							}
-						})
-						.done(function(html){
-							$("body").append(html);	
-							
-							// Effet sur la dialog
-							$("#dialog-connect").dialog({
-								//modal: true, // Fond gris lors du login
-								width: 'auto',
-								minHeight: 0,
-								show: {effect: "fadeIn"},
-								//hide: {effect: "fadeOut"},// Bug collateral : empèche la re-ouverture rapide de la dialog de connexion
-								create: function() 
-								{	
-									// Change le title en H1 pour l'accessibilitée
-									$(".ui-dialog-title").attr("role","heading").attr("aria-level","1");
-								},
-								closeText: __("Close"),
-								close: function() {
-									$("#dialog-connect").remove();
-								}
-							});
-						});
-					},
-			        async: true
-			    });		
+            if (typeof tosave == 'function') tosave();// Mode : A sauvegarder
 
-				
-			});
-		</script>
-		<?php
+            // Chargement de Jquery UI
+            $.ajax({
+              url: "<?=$GLOBALS['jquery_ui']?>",
+              dataType: 'script',
+              cache: true,
+              success: function ()// Si Jquery UI bien charger on charge la dialog de choix de login
+              {
+                // On ferme la dialog de connexion s'il y en a une d'ouvert
+                if ($("#dialog-connect").length) $("#dialog-connect").dialog("close");
+
+                // On ouvre la dialog de choix du système de login et affiche une erreur
+                $.ajax({
+                  url: "<?=$GLOBALS['path']?>api/ajax.php?mode=internal-login",
+                  data: {
+                    callback: "<?=(isset($_REQUEST['callback']) ? encode($_REQUEST['callback'], "_") : "")?>",
+                    msg: "<?=htmlspecialchars((isset($msg) ? $msg : ""));?>"
+                  }
+                })
+                  .done(function (html) {
+                    $("body").append(html);
+
+                    // Effet sur la dialog
+                    $("#dialog-connect").dialog({
+                      //modal: true, // Fond gris lors du login
+                      width: 'auto',
+                      minHeight: 0,
+                      show: {effect: "fadeIn"},
+                      //hide: {effect: "fadeOut"},// Bug collateral : empèche la re-ouverture rapide de la dialog de connexion
+                      create: function () {
+                        // Change le title en H1 pour l'accessibilitée
+                        $(".ui-dialog-title").attr("role", "heading").attr("aria-level", "1");
+                      },
+                      closeText: __("Close"),
+                      close: function () {
+                        $("#dialog-connect").remove();
+                      }
+                    });
+                  });
+              },
+              async: true
+            });
+
+
+          });
+        </script>
+        <?php
         exit;
-    } elseif ($quiet == 'error') {?><script>$(function() {error("<?=$msg?>", 4000); });</script><?php }
+    } elseif ($quiet == 'error') { ?>
+        <script>$(function () {
+            error("<?=$msg?>", 4000);
+          });</script><?php }
     }
 
 function logout($redirect = null)
 {
     // Supprime les variables de session de connexion
     unset($_SESSION['token'], $_SESSION['uid'], $_SESSION['expires'], $_SESSION['nonce'], $_SESSION['auth'], $_COOKIE['auth'], $_SESSION['state']);// session_destroy();
-    
+
     // Supprime le cookie d'autorisation user
     @setcookie("auth", "", time() - 3600, $GLOBALS['path'], $GLOBALS['domain']);
-    
+
     // Supprime le cookie de memorisation de l'utilisateur
     @setcookie("rememberme", "", time() - 3600, $GLOBALS['path'], $GLOBALS['domain']);
 
     // Si redirection
-    if($redirect == "login") {
+    if ($redirect == "login") {
         header("Location: ajax.php");
         exit;
-    } elseif($redirect == "home" or $redirect == "index") {// @todo A terme supprimer "home" car on utilise "index" maintenant 13/07/2020
-        header("Location: ".$GLOBALS['home']);
+    } elseif ($redirect == "home" or $redirect == "index") {// @todo A terme supprimer "home" car on utilise "index" maintenant 13/07/2020
+        header("Location: " . $GLOBALS['home']);
         exit;
     }
 }
-
 
 
 /********** IMAGE **********/
@@ -1380,10 +1402,10 @@ function file_check($file, $force_file_check_hack = false)
     finfo_close($finfo);
 
     // Vérifie que le type mime est supporté (Hack protection : contre les mauvais mimes types)
-    if(in_array($file_infos['mime'], $GLOBALS['mime_supported'])) {
-        if(@$GLOBALS['file_check_hack'] or $force_file_check_hack) {
+    if (in_array($file_infos['mime'], $GLOBALS['mime_supported'])) {
+        if (@$GLOBALS['file_check_hack'] or $force_file_check_hack) {
             // Le fichier tmp ne contient pas de php ou de javascript
-            if(!preg_match("/<\?php|<\? |<\?=|<scr/", file_get_contents($_FILES[$file]['tmp_name']), $matches)) {
+            if (!preg_match("/<\?php|<\? |<\?=|<scr/", file_get_contents($_FILES[$file]['tmp_name']), $matches)) {
                 return true;
             } else {
                 return false;
@@ -1409,7 +1431,7 @@ function resize($source_file, $new_width = null, $new_height = null, $dest_dir =
     // Récupération des informations de l'image source
     list($source_width, $source_height, $type, $attr) = getimagesize($source_file);
 
-    if(!$source_width and !$source_height and $ext!='svg') {
+    if (!$source_width and !$source_height and $ext != 'svg') {
         exit(__("Size of source file unspecified"));
     }
 
@@ -1421,58 +1443,63 @@ function resize($source_file, $new_width = null, $new_height = null, $dest_dir =
     $file_name = encode(basename(basename($source_file), "." . $source_ext));
 
     // Dossier final d'image redimensionnée
-    $dir = ($dest_dir ? $dest_dir.'/' : '');
+    $dir = ($dest_dir ? $dest_dir . '/' : '');
 
     // dir clean si media forcé
     $dir_clean = ltrim(str_replace($GLOBALS['media_dir'], '', $dir), '/');
 
     // Si image à réduire ou à forcer
-    if(($new_width and $source_width > $new_width) or ($new_height and $source_height > $new_height) or $option) {
+    if (($new_width and $source_width > $new_width) or ($new_height and $source_height > $new_height) or $option) {
         // Version original pour le zoom
-        $zoom = $GLOBALS['media_dir'].'/' . $dir_clean . $file_name . '.' . $source_ext;
+        $zoom = $GLOBALS['media_dir'] . '/' . $dir_clean . $file_name . '.' . $source_ext;
 
         // Si media dans dir on force. ne met pas dans /resize/
-        $dir = (strpos($dir, $GLOBALS['media_dir']) === 0 ? '' : $GLOBALS['media_dir'].'/resize/') . $dir;
+        $dir = (strpos($dir, $GLOBALS['media_dir']) === 0 ? '' : $GLOBALS['media_dir'] . '/resize/') . $dir;
 
         // Crée les dossiers
         @mkdir($root_dir . $dir, 0755, true);
 
         // On crée une image avec l'image source en fonction de son type
-        switch($type) {
-            case 1: $source_img = imagecreatefromgif($source_file);
+        switch ($type) {
+            case 1:
+                $source_img = imagecreatefromgif($source_file);
                 break;
-            case 2: $source_img = imagecreatefromjpeg($source_file);
+            case 2:
+                $source_img = imagecreatefromjpeg($source_file);
                 break;
-            case 3: $source_img = imagecreatefrompng($source_file);
+            case 3:
+                $source_img = imagecreatefrompng($source_file);
                 break;
-            case 18: $source_img = imagecreatefromwebp($source_file);
+            case 18:
+                $source_img = imagecreatefromwebp($source_file);
                 break;
-            default: exit(__("Unsupported file type"));
+            default:
+                exit(__("Unsupported file type"));
                 break;
         }
-            
+
         // Callage de l'image
         $x = $y = 0;
 
-        if($new_width and $new_height) {// On redimensionne dans tous les sens
+        if ($new_width and $new_height) {// On redimensionne dans tous les sens
             $ratio_width = $source_width / $new_width;
             $ratio_height = $source_height / $new_height;
 
-            if($ratio_width > 1 or $ratio_height > 1) {// Taille maximale dépassée dans un sens ?
-                if($option == "crop") {
-                    if($ratio_width < $ratio_height) {
+            if ($ratio_width > 1 or $ratio_height > 1) {// Taille maximale dépassée dans un sens ?
+                if ($option == "crop") {
+                    if ($ratio_width < $ratio_height) {
                         $dest_width = $new_width;
                         $dest_height = ceil(round($source_height / $ratio_width, 2));
                     } else {
                         $dest_width = ceil(round($source_width / $ratio_height, 2));
                         $dest_height = $new_height;
                     }
-                    
+
                     // Positionnement de l'image cropé
                     $x = ($new_width - $dest_width) / 2;
                     $y = ($new_height - $dest_height) / 3;// Paramètre pour callé en hauteur le crop (2 à l'origine)
                 } else {// Si pas crop on resize la taille la plus grande
-                    if($ratio_width < $ratio_height) {
+                    if ($ratio_width < $ratio_height) {
                         $dest_width = $new_width = ceil(round($source_width / $ratio_height, 2));
                         $dest_height = $new_height;
                     } else {
@@ -1485,32 +1512,32 @@ function resize($source_file, $new_width = null, $new_height = null, $dest_dir =
                 $dest_height = $new_height;
             }
 
-        } elseif($new_width and !$new_height) {// On force la largeur => on calcule la nouvelle hauteur
+        } elseif ($new_width and !$new_height) {// On force la largeur => on calcule la nouvelle hauteur
             $new_width = $dest_width = $new_width;
             $new_height = $dest_height = ceil(round($new_width * $source_height / $source_width, 2));
-        } elseif(!$new_width and $new_height) {// On force la hauteur => on calcule la nouvelle largeur
+        } elseif (!$new_width and $new_height) {// On force la hauteur => on calcule la nouvelle largeur
             $new_width = $dest_width = ceil(round($new_height * $source_width / $source_height, 2));
             $new_height = $dest_height = $new_height;
         }
 
         // Cas ou pas de nouvelle taille => on prend les tailles de l'image d'origine
-        if(!$new_width and !$new_height) {
+        if (!$new_width and !$new_height) {
             $new_width = $dest_width = $source_width;
             $new_height = $dest_height = $source_height;
         }
-        
+
         // Création de l'image vide de base pour y coller l'image finale
         $final_img = imagecreatetruecolor($new_width, $new_height);
-        
+
         // S'il y a une transparence on la conserve
-        switch($type) {
+        switch ($type) {
             case 1: // Gif
                 imagecolortransparent($final_img, imagecolorallocatealpha($final_img, 0, 0, 0, 127));
                 // no break
             case 3: // Png
             case 18: // Webp
                 // Si conversion vers image sans transparence on met du blanc au fond
-                if($option == 'tojpg') {
+                if ($option == 'tojpg') {
                     $white = imagecolorallocate($final_img, 255, 255, 255);
                     imagefilledrectangle($final_img, 0, 0, $new_width, $new_height, $white);
                 } else {
@@ -1519,75 +1546,85 @@ function resize($source_file, $new_width = null, $new_height = null, $dest_dir =
                 }
                 break;
         }
-        
+
         // On copie et resize l'image dans l'image de base finale
         imagecopyresampled($final_img, $source_img, $x, $y, 0, 0, $dest_width, $dest_height, $source_width, $source_height);
-        
+
         // Libère la mémoire
         imagedestroy($source_img);
 
         // Si l'image n'a pas la bonne orientation (consomme pas mal de mémoire)
         switch ($option) {
-            case 3: $deg = 180;
+            case 3:
+                $deg = 180;
                 break;
-            case 6: $deg = 270;
+            case 6:
+                $deg = 270;
                 break;
-            case 8: $deg = 90;
+            case 8:
+                $deg = 90;
                 break;
         }
-        if(isset($deg)) {
+        if (isset($deg)) {
             $final_img = imagerotate($final_img, $deg, 0);
         }
 
         // Si convertion de format
         switch ($option) {
-            case 'tojpg': $source_ext = 'jpg';
+            case 'tojpg':
+                $source_ext = 'jpg';
                 $type = 2;
                 $zoom = '';
                 break;
-            case 'topng': $source_ext = 'png';
+            case 'topng':
+                $source_ext = 'png';
                 $type = 3;
                 $zoom = '';
                 break;
-            case 'towebp': $source_ext = 'webp';
+            case 'towebp':
+                $source_ext = 'webp';
                 $type = 18;
                 $zoom = '';
                 break;
         }
 
-        
+
         // Ajoute la taille de la nouvelle image en supprimant l'ancienne si besoin
         preg_match("/(-[0-9]+x[0-9]+)$/", $file_name, $matches);
-        if(isset($matches[0])) {
+        if (isset($matches[0])) {
             $file_name = str_replace($matches[0], "", $file_name);
         }
-        $file_name_ext = $file_name."-".round($new_width)."x".round($new_height).".".$source_ext;
+        $file_name_ext = $file_name . "-" . round($new_width) . "x" . round($new_height) . "." . $source_ext;
 
         // Création de l'image finale dans le bon type
-        switch($type) {
-            case 1: imagegif($final_img, $root_dir . $dir . $file_name_ext);
+        switch ($type) {
+            case 1:
+                imagegif($final_img, $root_dir . $dir . $file_name_ext);
                 break;
-            case 2: imagejpeg($final_img, $root_dir . $dir . $file_name_ext, $GLOBALS['jpg_quality']);
+            case 2:
+                imagejpeg($final_img, $root_dir . $dir . $file_name_ext, $GLOBALS['jpg_quality']);
                 break;
-            case 3: imagepng($final_img, $root_dir . $dir . $file_name_ext);
+            case 3:
+                imagepng($final_img, $root_dir . $dir . $file_name_ext);
                 break;// $GLOBALS['png_quality']
-            case 18: imagewebp($final_img, $root_dir . $dir . $file_name_ext, $GLOBALS['webp_quality']);
+            case 18:
+                imagewebp($final_img, $root_dir . $dir . $file_name_ext, $GLOBALS['webp_quality']);
                 break;
         }
-        
+
         imagedestroy($final_img);// Libère la mémoire
     } else {// Copie l'image si elle est plus petite ou à la bonne taille
         $zoom = "";// Pas de zoom
 
-        $dir = $GLOBALS['media_dir']."/" . $dir_clean;// @todo ajouter le dir (sans resize)
-        $file_name_ext = $file_name.".".$source_ext;
-        
+        $dir = $GLOBALS['media_dir'] . "/" . $dir_clean;// @todo ajouter le dir (sans resize)
+        $file_name_ext = $file_name . "." . $source_ext;
+
         @mkdir($root_dir . $dir, 0755, true);// Crée les dossiers
 
         copy($source_file, $root_dir . $dir . $file_name_ext);
     }
 
-    return $dir . $file_name_ext . "?" . ($zoom?"zoom=".$zoom."&":"") . time();// Time pour forcer le refresh
+    return $dir . $file_name_ext . "?" . ($zoom ? "zoom=" . $zoom . "&" : "") . time();// Time pour forcer le refresh
 }
 
 // Examine et traite une image
@@ -1595,19 +1632,19 @@ function img_process($root_file, $dest_dir = null, $new_width = null, $new_heigh
 {
     // Valeur par défaut
     $option = null;
-    $dir = ($dest_dir ? $GLOBALS['media_dir'].'/'.$dest_dir : $GLOBALS['media_dir']);
-    $src_file = $dir.'/'.basename($root_file).'?'.time();
+    $dir = ($dest_dir ? $GLOBALS['media_dir'] . '/' . $dest_dir : $GLOBALS['media_dir']);
+    $src_file = $dir . '/' . basename($root_file) . '?' . time();
 
     // Taille de l'image uploadée
     list($source_width, $source_height, $type) = getimagesize($root_file);
-    
+
     // Limite max de taille d'image pour l'upload global
     list($max_width, $max_height) = explode("x", $GLOBALS['max_image_size']);
-    
+
     // On vérifie la bonne orientation de l'image jpeg
-    if($type == 2) {// Exif ne fonctionne qu'avec les jpeg
+    if ($type == 2) {// Exif ne fonctionne qu'avec les jpeg
         $exif = @exif_read_data($root_file);
-        if(isset($exif['Orientation']) and $exif['Orientation'] != 1) {
+        if (isset($exif['Orientation']) and $exif['Orientation'] != 1) {
             $max_width = ($source_width > $max_width ? $max_width : $source_width);
             $max_height = ($source_height > $max_height ? $max_height : $source_height);
             $option = $exif['Orientation'];
@@ -1615,7 +1652,7 @@ function img_process($root_file, $dest_dir = null, $new_width = null, $new_heigh
     }
 
     // Image trop grande (> global) pour le web : on la redimensionne
-    if($source_width > $max_width or $source_height > $max_height or $option) {
+    if ($source_width > $max_width or $source_height > $max_height or $option) {
         // Redimensionne sans crop
         $src_file = resize($root_file, $max_width, $max_height, $dir, $option);
 
@@ -1623,20 +1660,20 @@ function img_process($root_file, $dest_dir = null, $new_width = null, $new_heigh
         unlink($root_file);
 
         // La maxsize devient l'image root (explode: supp le timer)
-        $root_file = $_SERVER['DOCUMENT_ROOT'].$GLOBALS['path'].explode("?", $src_file)[0];
+        $root_file = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . explode("?", $src_file)[0];
     }
-    
+
 
     // L'interface a demandé un redimensionnement ?
-    if($resize and (($new_width and $source_width > $new_width) or ($new_height and $source_height > $new_height))) {
+    if ($resize and (($new_width and $source_width > $new_width) or ($new_height and $source_height > $new_height))) {
         return resize($root_file, $new_width, $new_height, $dest_dir, $resize);// Redimensionne
 
         //unlink($root_file);// Si on a redimensionné on supp l'image de base
     } else {// Pas de redimensionnement
-        $dest_file = $_SERVER['DOCUMENT_ROOT'].$GLOBALS['path'].explode("?", $src_file)[0];
+        $dest_file = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . explode("?", $src_file)[0];
 
         // Le fichier destination est demandé dans un endroit different du fichier source
-        if($root_file != $dest_file) {
+        if ($root_file != $dest_file) {
             // Si dossier destination on copie l'image dans la destination
             copy($root_file, $dest_file);
 
@@ -1650,14 +1687,14 @@ function img_process($root_file, $dest_dir = null, $new_width = null, $new_heigh
 }
 
 
-
 /********** TEXTE **********/
 
 // Coupe une phrase proprement
 function word_cut($texte, $limit, $end = '', $tags = '') //$tags = '<br><div>'  $end = '...'
-{$texte = strip_tags($texte.' ', $tags);// texte sans html
+{
+    $texte = strip_tags($texte . ' ', $tags);// texte sans html
     $word_cut = preg_replace('/\s+?(\S+)?$/', '', substr($texte, 0, $limit));// /\s+?(\S+)?$/u => /u => pour l'utf8
-    if(strlen($word_cut) < strlen(trim($texte))) {
+    if (strlen($word_cut) < strlen(trim($texte))) {
         $word_cut .= $end;
     }// Si coupure on ajoute une ponctuation à la fin
     return $word_cut;
@@ -1689,22 +1726,21 @@ function date_lang($date)
     ];
 
     // si 1 on écrit 1er
-    if($jour == 1) {
-        $jour = '1'.__('st');
+    if ($jour == 1) {
+        $jour = '1' . __('st');
     }
 
     // Phrase avec nom du mois traduit
-    $date  = $jour.' '.__($nom_mois[$mois]).' '.$annee;
+    $date = $jour . ' ' . __($nom_mois[$mois]) . ' ' . $annee;
 
     // Convertir en utf8 si besoin en fonction du serveur
     return iconv(mb_detect_encoding($date, mb_detect_order(), true), 'UTF-8', $date);
 }
 
 
-
 /********** FONCTION DU THEME **********/
-if(isset($GLOBALS['function']) and $GLOBALS['function'] != "") {
-    include_once($_SERVER["DOCUMENT_ROOT"].$GLOBALS['path']."theme/".$GLOBALS['theme'].($GLOBALS['theme']?"/":"").$GLOBALS['function']);
+if (isset($GLOBALS['function']) and $GLOBALS['function'] != "") {
+    include_once($_SERVER["DOCUMENT_ROOT"] . $GLOBALS['path'] . "theme/" . $GLOBALS['theme'] . ($GLOBALS['theme'] ? "/" : "") . $GLOBALS['function']);
 }
 
 ?>

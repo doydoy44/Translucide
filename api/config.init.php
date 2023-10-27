@@ -10,20 +10,20 @@ ini_set('display_errors', 'On');
 ini_set('allow_url_include', 'off');
 ini_set('default_charset', 'UTF-8');
 
-if(!isset($_SESSION)) {
+if (!isset($_SESSION)) {
     // Pour aider safari qui ne gère pas les cookies en iframe/cross domain
     ini_set('session.use_cookies', 1);       // Use cookies to store session.
     ini_set('session.use_only_cookies', 1);  // Force cookies for session (phpsessionID forbidden in URL)
     ini_set('session.use_trans_sid', false); // Prevent php to use session ID in URL if cookies are disabled.
 
-    if(!isset($cron)) {
+    if (!isset($cron)) {
         session_start();
     }
 }
 
 
 // Fixe la langue
-if(strstr($_SERVER['SERVER_NAME'], 'domaine.com')) {
+if (strstr($_SERVER['SERVER_NAME'], 'domaine.com')) {
     $lang = $_SESSION['lang'] = 'en';
 } else {
     $lang = $_SESSION['lang'] = 'fr';
@@ -37,7 +37,7 @@ $GLOBALS['lang_alt'] = 'en';
 date_default_timezone_set('Europe/Paris');
 
 // Langue des dates .UTF8
-if($lang == 'fr') {
+if ($lang == 'fr') {
     setlocale(LC_ALL, 'fr_FR.utf8', 'fra');
 } else {
     setlocale(LC_ALL, 'en_US.utf8');
@@ -45,7 +45,7 @@ if($lang == 'fr') {
 
 
 // Serveur local ou online ? DEV || PROD
-if(
+if (
     $_SERVER['SERVER_ADDR'] == '127.0.0.1' or
     strpos($_SERVER['SERVER_ADDR'], '::1') !== false) {
     $dev = true;
@@ -58,12 +58,12 @@ if(
 $GLOBALS['db_prefix'] = '';
 $GLOBALS['db_charset'] = 'utf8mb4';// utf8 => classique || utf8mb4 => pour les emoji mac
 
-$GLOBALS['table_content'] = $GLOBALS['tc'] = $GLOBALS['db_prefix'].'content';
-$GLOBALS['table_meta'] = $GLOBALS['tm'] = $GLOBALS['db_prefix'].'meta';
-$GLOBALS['table_tag'] = $GLOBALS['tt'] = $GLOBALS['db_prefix'].'tag';
-$GLOBALS['table_user'] = $GLOBALS['tu'] = $GLOBALS['db_prefix'].'user';
+$GLOBALS['table_content'] = $GLOBALS['tc'] = $GLOBALS['db_prefix'] . 'content';
+$GLOBALS['table_meta'] = $GLOBALS['tm'] = $GLOBALS['db_prefix'] . 'meta';
+$GLOBALS['table_tag'] = $GLOBALS['tt'] = $GLOBALS['db_prefix'] . 'tag';
+$GLOBALS['table_user'] = $GLOBALS['tu'] = $GLOBALS['db_prefix'] . 'user';
 
-if($dev) {// Dev local
+if ($dev) {// Dev local
     $GLOBALS['db_server'] = '';
     $GLOBALS['db_user'] = '';
     $GLOBALS['db'] = '';
@@ -89,14 +89,14 @@ $GLOBALS['theme'] = '';
 $GLOBALS['sitename'] = null;
 
 
-if($dev) {// Dev local
+if ($dev) {// Dev local
     $GLOBALS['scheme'] = '';
 } else {
     $GLOBALS['scheme'] = '';
 }
 
 
-if($dev) {// Dev local
+if ($dev) {// Dev local
     $GLOBALS['domain'] = '';
 } else {
     $GLOBALS['domain'] = '';
@@ -119,7 +119,7 @@ $GLOBALS['offline'] = null;
 
 
 // Utilisation de librairie minifier
-if($dev) {// Dev local
+if ($dev) {// Dev local
     $GLOBALS['min'] = '';
 } else {
     $GLOBALS['min'] = '';
@@ -229,7 +229,7 @@ $GLOBALS['file_check_hack'] = false;
 
 
 // Temps d'expiration des sessions de connexion
-$GLOBALS['session_expiration'] = 60*60*24*30;
+$GLOBALS['session_expiration'] = 60 * 60 * 24 * 30;
 
 
 // Compte public autorisé
@@ -360,7 +360,7 @@ $GLOBALS['style.css'] = null;
 
 
 // Librairie externe
-$GLOBALS['jquery'] = $GLOBALS['path'].'api/jquery.min.js';// //ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js
+$GLOBALS['jquery'] = $GLOBALS['path'] . 'api/jquery.min.js';// //ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js
 
 $GLOBALS['jquery_ui'] = '//ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js';
 
@@ -382,8 +382,8 @@ $GLOBALS['filter'] = [];
 $GLOBALS['translation'] = [];
 $GLOBALS['content'] = [];
 $GLOBALS['editkey'] = 1;
-$GLOBALS['home'] = $GLOBALS['scheme'].$GLOBALS['domain'].$GLOBALS['path'];
-$GLOBALS['root'] = $_SERVER['DOCUMENT_ROOT'].$GLOBALS['path'].'theme/'.$GLOBALS['theme'].($GLOBALS['theme']?'/':'');
+$GLOBALS['home'] = $GLOBALS['scheme'] . $GLOBALS['domain'] . $GLOBALS['path'];
+$GLOBALS['root'] = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . 'theme/' . $GLOBALS['theme'] . ($GLOBALS['theme'] ? '/' : '');
 
 
 // Numéro de la page en cours

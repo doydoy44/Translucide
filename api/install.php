@@ -28,12 +28,12 @@ switch(@$_GET['mode']) {
         // Verifie que l'on execute bien depuis index.php
         // Evite d'avoir d'autre chargement de la config (ex: favicon.ico inexistant qui charge la conf une 2ème fois))
         // Si url de redirection existe, elle doit etre = au nom du script executé qui appel l'install = index.php
-        if(isset($_SERVER['REDIRECT_URL']) and $_SERVER['REDIRECT_URL'] != $_SERVER['SCRIPT_NAME']) {
+        if (isset($_SERVER['REDIRECT_URL']) and $_SERVER['REDIRECT_URL'] != $_SERVER['SCRIPT_NAME']) {
             exit;
         }
 
         // Si on appelle directement le fichier depuis le dossier api/ => exit
-        if(strstr($_SERVER['SCRIPT_NAME'], 'install.php')) {
+        if (strstr($_SERVER['SCRIPT_NAME'], 'install.php')) {
             exit;
         }
 
@@ -86,18 +86,18 @@ switch(@$_GET['mode']) {
 
 
         // On vérifie si la configuration est déjà créée / normalement plus utile car on bloque plus haut le chargement de install.php directement dans l'url
-        if($GLOBALS['db_server'] or $GLOBALS['db_user'] or $GLOBALS['db']) {
-            exit('<h1>'.__('Configuration already created').'</h1>');
+        if ($GLOBALS['db_server'] or $GLOBALS['db_user'] or $GLOBALS['db']) {
+            exit('<h1>' . __('Configuration already created') . '</h1>');
         }
 
 
         // Chemin complet du site
         $scheme_domain_path = "";
-        if($GLOBALS['scheme'] and $GLOBALS['domain'] and $GLOBALS['path']) {
+        if ($GLOBALS['scheme'] and $GLOBALS['domain'] and $GLOBALS['path']) {
             $scheme_domain_path = $GLOBALS['home'];
         } else {
-            if(isset($_SERVER['REQUEST_SCHEME'])) {
-                $scheme_domain_path .= $_SERVER['REQUEST_SCHEME']."://";
+            if (isset($_SERVER['REQUEST_SCHEME'])) {
+                $scheme_domain_path .= $_SERVER['REQUEST_SCHEME'] . "://";
             } else {
                 $scheme_domain_path .= "http://";
             }
@@ -110,17 +110,17 @@ switch(@$_GET['mode']) {
         }
 
         // Nom du site
-        if(isset($GLOBALS['sitename'])) {
-            $sitename =  mb_convert_encoding($GLOBALS['sitename'], 'UTF-8', mb_list_encodings());
+        if (isset($GLOBALS['sitename'])) {
+            $sitename = mb_convert_encoding($GLOBALS['sitename'], 'UTF-8', mb_list_encodings());
         } else {
             $parse_url = parse_url($scheme_domain_path);
 
 
-            if($parse_url['path'] != '/') {// Si dossier
+            if ($parse_url['path'] != '/') {// Si dossier
                 $sitename = ucfirst(trim($parse_url['path'], '/'));
             } else {// Si juste domaine
                 $domains = explode('.', $_SERVER['SERVER_NAME']);
-                $sitename = ucfirst($domains[count($domains)-2]);
+                $sitename = ucfirst($domains[count($domains) - 2]);
             }
         }
 
@@ -128,205 +128,248 @@ switch(@$_GET['mode']) {
         header('Content-type: text/html; charset=UTF-8');
 
         ?><!DOCTYPE html>
-		<html lang="<?=$lang;?>">
-		<head>
+<html lang="<?= $lang; ?>">
+<head>
 
-			<meta charset="utf-8">
+    <meta charset="utf-8">
 
-			<title><?php _e("Site Installation");?></title>
+    <title><?php _e("Site Installation"); ?></title>
 
-			<meta name="robots" content="noindex, nofollow">
+    <meta name="robots" content="noindex, nofollow">
 
-			<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-			<link rel="shortcut icon" type="image/x-icon" href="about:blank">
-			<!-- Pour eviter de charger un ico 404 qui recharge la config -->
+    <link rel="shortcut icon" type="image/x-icon" href="about:blank">
+    <!-- Pour eviter de charger un ico 404 qui recharge la config -->
 
-			<link rel="stylesheet" href="<?=$GLOBALS['jquery_ui_css'];?>">
+    <link rel="stylesheet" href="<?= $GLOBALS['jquery_ui_css']; ?>">
 
-			<link rel="stylesheet" href="theme/default/style.min.css?">
+    <link rel="stylesheet" href="theme/default/style.min.css?">
 
-			<style>
-				@font-face {
-					font-family: 'FontAwesome';
-					src:  url('api/icons/icons.eot?<?=$GLOBALS['cache']?>');
-					src:
-						url('api/icons/icons.eot?<?=$GLOBALS['cache']?>#iefix') format('embedded-opentype'),
-						url('api/icons/icons.woff2?<?=$GLOBALS['cache']?>') format('woff2'),
-						url('api/icons/icons.woff?<?=$GLOBALS['cache']?>') format('woff'),
-						url('api/icons/icons.ttf?<?=$GLOBALS['cache']?>') format('truetype'),
-						url('api/icons/icons.svg?<?=$GLOBALS['cache']?>#icons') format('svg');
-					font-weight: normal;
-					font-style: normal;
-				}
+    <style>
+        @font-face {
+            font-family: 'FontAwesome';
+            src: url('api/icons/icons.eot?<?=$GLOBALS['cache']?>');
+            src: url('api/icons/icons.eot?<?=$GLOBALS['cache']?>#iefix') format('embedded-opentype'),
+            url('api/icons/icons.woff2?<?=$GLOBALS['cache']?>') format('woff2'),
+            url('api/icons/icons.woff?<?=$GLOBALS['cache']?>') format('woff'),
+            url('api/icons/icons.ttf?<?=$GLOBALS['cache']?>') format('truetype'),
+            url('api/icons/icons.svg?<?=$GLOBALS['cache']?>#icons') format('svg');
+            font-weight: normal;
+            font-style: normal;
+        }
 
-				body { background-color: #75898c; }
-				.layer { box-shadow: 0 0 60px rgba(53, 116, 127, 0.3) inset, 0 0 5px rgba(0, 0, 0, 0.3);	}
-				.layer:after { display: none; }
+        body {
+            background-color: #75898c;
+        }
 
-				label {
-					text-align: right;
-					padding-right: 1rem;
-					cursor: default;
-				}
+        .layer {
+            box-shadow: 0 0 60px rgba(53, 116, 127, 0.3) inset, 0 0 5px rgba(0, 0, 0, 0.3);
+        }
 
-				@media screen and (max-width: 640px)
-				{
-					.w80 { width: 95%; }
-					.w10, .w20, .w30, .w50, .w60 { width: 90%; }
+        .layer:after {
+            display: none;
+        }
 
-					label {
-						display: block;
-						text-align: left;
-					}
-				}
+        label {
+            text-align: right;
+            padding-right: 1rem;
+            cursor: default;
+        }
 
-				.bt.fixed.top { display: none !important; }
-			</style>
+        @media screen and (max-width: 640px) {
+            .w80 {
+                width: 95%;
+            }
 
-			<script src="api/jquery.min.js"></script>
+            .w10, .w20, .w30, .w50, .w60 {
+                width: 90%;
+            }
 
-			<script src="<?=$GLOBALS['jquery_ui'];?>"></script>
+            label {
+                display: block;
+                text-align: left;
+            }
+        }
 
-			<script src="api/lucide.init.js"></script>
+        .bt.fixed.top {
+            display: none !important;
+        }
+    </style>
 
-			<script>
-				path = "";
+    <script src="api/jquery.min.js"></script>
 
-				submittable = function() {
-					// Icône de chargement
-					$("#setup button i").removeClass("fa-spin");
+    <script src="<?= $GLOBALS['jquery_ui']; ?>"></script>
 
-					// Active le submit
-					$("#setup button").attr("disabled", false);
-				}
+    <script src="api/lucide.init.js"></script>
 
-				$(function()
-				{
-					// Setup
-					$("#setup").submit(function(event)
-					{
-						event.preventDefault();
+    <script>
+      path = "";
 
-						// Icône de chargement
-						$("#setup button i").addClass("fa-spin");
+      submittable = function () {
+        // Icône de chargement
+        $("#setup button i").removeClass("fa-spin");
 
-						// Désactive le submit
-						$("#setup button").attr("disabled", true);
+        // Active le submit
+        $("#setup button").attr("disabled", false);
+      }
 
-						// Variable
-						var data = {};
-						 $("input, select", $("#setup")).each(function(index) {
-							data[$(this).attr("id")] = this.value;
-						 })
+      $(function () {
+        // Setup
+        $("#setup").submit(function (event) {
+          event.preventDefault();
 
-						$.ajax(
-						{
-							type: "POST",
-							url: "api/install.php?mode=start",
-							data: data,
-							success: function(html){ $("body").append(html); }
-						});
-					});
-				});
-			</script>
+          // Icône de chargement
+          $("#setup button i").addClass("fa-spin");
 
-			<!--[if lt IE 9]>
-				<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-			<![endif]-->
+          // Désactive le submit
+          $("#setup button").attr("disabled", true);
 
-		</head>
-		<body>
+          // Variable
+          var data = {};
+          $("input, select", $("#setup")).each(function (index) {
+            data[$(this).attr("id")] = this.value;
+          })
 
-			<div class="w80 center">
+          $.ajax(
+            {
+              type: "POST",
+              url: "api/install.php?mode=start",
+              data: data,
+              success: function (html) {
+                $("body").append(html);
+              }
+            });
+        });
+      });
+    </script>
 
-				<h1 class="tc black"><?php _e("Site Installation");?></h1>
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-				<div class="layer mod pam mbm">
+</head>
+<body>
 
-					<form id="setup">
+<div class="w80 center">
 
-						<input type="hidden" id="nonce" name="nonce" value="<?=nonce("nonce");?>" class="w100">
+    <h1 class="tc black"><?php _e("Site Installation"); ?></h1>
 
-						<ul class="unstyled">
+    <div class="layer mod pam mbm">
 
-							<li><label class="w30"><?php _e("Address database");?></label> <input type="text" id="db_server" value="<?=$GLOBALS['db_server'];?>" placeholder="localhost" required class="w60 vatt"></li>
+        <form id="setup">
 
-							<li><label class="w30"><?php _e("Name of the data base");?></label> <input type="text" id="db" value="<?=$GLOBALS['db'];?>" required class="w60 vatt"></li>
+            <input type="hidden" id="nonce" name="nonce" value="<?= nonce("nonce"); ?>" class="w100">
 
-							<li><label class="w30"><?php _e("MySQL Username");?></label> <input type="text" id="db_user" value="<?=$GLOBALS['db_user'];?>" placeholder="root" required class="w60 vatt"></li>
+            <ul class="unstyled">
 
-							<li>
-								<label class="w30"><?php _e("MySQL User Password");?></label> <input type="text" id="db_pwd" value="<?=$GLOBALS['db_pwd'];?>" class="w60 vatt">
-								<a href="javascript:void(0);" onclick="if($('#db_pwd').attr('type') == 'password') $('#db_pwd').attr('type','text'); else $('#db_pwd').attr('type','password');" tabindex="-1"><i class="fa fa-fw fa-eye mts vam"></i></a>
-							</li>
+                <li><label class="w30"><?php _e("Address database"); ?></label> <input type="text" id="db_server"
+                                                                                       value="<?= $GLOBALS['db_server']; ?>"
+                                                                                       placeholder="localhost" required
+                                                                                       class="w60 vatt"></li>
 
-							<li><label class="w30"><?php _e("Table Prefix");?></label> <input type="text" id="db_prefix" value="<?=$GLOBALS['db_prefix'];?>" placeholder="tl_" class="w10 vatt"></li>
+                <li><label class="w30"><?php _e("Name of the data base"); ?></label> <input type="text" id="db"
+                                                                                            value="<?= $GLOBALS['db']; ?>"
+                                                                                            required class="w60 vatt">
+                </li>
+
+                <li><label class="w30"><?php _e("MySQL Username"); ?></label> <input type="text" id="db_user"
+                                                                                     value="<?= $GLOBALS['db_user']; ?>"
+                                                                                     placeholder="root" required
+                                                                                     class="w60 vatt"></li>
+
+                <li>
+                    <label class="w30"><?php _e("MySQL User Password"); ?></label> <input type="text" id="db_pwd"
+                                                                                          value="<?= $GLOBALS['db_pwd']; ?>"
+                                                                                          class="w60 vatt">
+                    <a href="javascript:void(0);"
+                       onclick="if($('#db_pwd').attr('type') == 'password') $('#db_pwd').attr('type','text'); else $('#db_pwd').attr('type','password');"
+                       tabindex="-1"><i class="fa fa-fw fa-eye mts vam"></i></a>
+                </li>
+
+                <li><label class="w30"><?php _e("Table Prefix"); ?></label> <input type="text" id="db_prefix"
+                                                                                   value="<?= $GLOBALS['db_prefix']; ?>"
+                                                                                   placeholder="tl_" class="w10 vatt">
+                </li>
 
 
-							<li class="mtm"><label class="w30 bold"><?php _e("Name of the site");?></label> <input type="text" id="sitename" value="<?=$sitename;?>" class="w60 vatt"></li>
-							<li>
-								<label class="w30"><?php _e("Site theme");?></label>
+                <li class="mtm"><label class="w30 bold"><?php _e("Name of the site"); ?></label> <input type="text"
+                                                                                                        id="sitename"
+                                                                                                        value="<?= $sitename; ?>"
+                                                                                                        class="w60 vatt">
+                </li>
+                <li>
+                    <label class="w30"><?php _e("Site theme"); ?></label>
 
-								<select id="theme" class="vatt">
-								<?php
+                    <select id="theme" class="vatt">
+                        <?php
                                 // Un thème dans la racine
-                                if(file_exists("theme/header.php")) {
-                                    echo"<option value=\"\"".($GLOBALS['theme'] == "" ? " selected":"").">/</option>";
+                                if (file_exists("theme/header.php")) {
+                                    echo "<option value=\"\"" . ($GLOBALS['theme'] == "" ? " selected" : "") . ">/</option>";
                                 }
 
                                 // Des dossiers de thème
                                 $scandir = array_diff(scandir("theme/"), ['..', '.', 'tpl']);
-        foreach($scandir as $cle => $file) {
-            if(is_dir("theme/".$file)) {
-                echo"<option value=\"".$file."\"".($GLOBALS['theme'] == $file ? " selected":"").">".$file."</option>";
+        foreach ($scandir as $cle => $file) {
+            if (is_dir("theme/" . $file)) {
+                echo "<option value=\"" . $file . "\"" . ($GLOBALS['theme'] == $file ? " selected" : "") . ">" . $file . "</option>";
             }
         }
         ?>
-								</select>
+                    </select>
 
-							</li>
-							<li><label class="w30"><?php _e("Site Location");?></label> <input type="text" id="scheme_domain_path" value="<?=$scheme_domain_path;?>" required class="w60 vatt"></li>
+                </li>
+                <li><label class="w30"><?php _e("Site Location"); ?></label> <input type="text" id="scheme_domain_path"
+                                                                                    value="<?= $scheme_domain_path; ?>"
+                                                                                    required class="w60 vatt"></li>
 
 
-							<li class="mtm">
-								<label class="w30 bold"><i class="fa fa-fw fa-globe"></i> <?php _e("Administrator email");?></label> <input type="email" id="email_contact" value="<?=$GLOBALS['email_contact'];?>" required maxlength="100" class="w60 vatt" autocomplete="username"><!-- autocomplete="username" -->
-							</li>
-							<li>
-								<label class="w30 bold"><i class="fa fa-fw fa-key"></i> <?php _e("Administrator password");?></label>
-								<input type="password" id="password" required class="w60 vatt"><!--  autocomplete="current-password" -->
+                <li class="mtm">
+                    <label class="w30 bold"><i class="fa fa-fw fa-globe"></i> <?php _e("Administrator email"); ?>
+                    </label> <input type="email" id="email_contact" value="<?= $GLOBALS['email_contact']; ?>" required
+                                    maxlength="100" class="w60 vatt" autocomplete="username">
+                    <!-- autocomplete="username" -->
+                </li>
+                <li>
+                    <label class="w30 bold"><i class="fa fa-fw fa-key"></i> <?php _e("Administrator password"); ?>
+                    </label>
+                    <input type="password" id="password" required class="w60 vatt">
+                    <!--  autocomplete="current-password" -->
 
-								<a href="javascript:$('#setup #password').make_password();" title="<?php _e("Suggest a password");?>" class="tdn"><i class="fa fa-fw fa-arrows-cw mts vam"></i></a>
+                    <a href="javascript:$('#setup #password').make_password();"
+                       title="<?php _e("Suggest a password"); ?>" class="tdn"><i
+                                class="fa fa-fw fa-arrows-cw mts vam"></i></a>
 
-								<a href="javascript:void(0);" onclick="if($('#password').attr('type') == 'password') $('#password').attr('type','text'); else $('#password').attr('type','password');" tabindex="-1"><i class="fa fa-fw fa-eye mts vam"></i></a>
+                    <a href="javascript:void(0);"
+                       onclick="if($('#password').attr('type') == 'password') $('#password').attr('type','text'); else $('#password').attr('type','password');"
+                       tabindex="-1"><i class="fa fa-fw fa-eye mts vam"></i></a>
 
-								<!-- <a href="javascript:void(0);" onclick="$('#setup #password').make_password();" title="<?php _e("Suggest a password");?>"><i class="fa fa-fw fa-arrows-cw mts vam"></i></a> -->
+                    <!-- <a href="javascript:void(0);" onclick="$('#setup #password').make_password();" title="<?php _e("Suggest a password"); ?>"><i class="fa fa-fw fa-arrows-cw mts vam"></i></a> -->
 
-							</li>
+                </li>
 
-							<!--
-							<li class="mtl bold"><?php _e("Option");?></li>
+                <!--
+							<li class="mtl bold"><?php _e("Option"); ?></li>
 
-							<li><label class="w30"><i class="fa fa-fw fa-line-chart"></i> <?php _e("Google analytics code");?></label> <input type="text" id="google_analytics" placeholder="UA-00000000-1" class="w20 vatt"></li>
+							<li><label class="w30"><i class="fa fa-fw fa-line-chart"></i> <?php _e("Google analytics code"); ?></label> <input type="text" id="google_analytics" placeholder="UA-00000000-1" class="w20 vatt"></li>
 							 -->
-						</ul>
+            </ul>
 
-						<button class="fr mam bold"><?php _e("Start installation");?> <i class="fa fa-fw fa-cog"></i></button>
+            <button class="fr mam bold"><?php _e("Start installation"); ?> <i class="fa fa-fw fa-cog"></i></button>
 
-					</form>
+        </form>
 
-				</div>
+    </div>
 
-			</div>
+</div>
 
-		</body>
-		</html>
-		<?php
+</body>
+</html>
+<?php
 
-        exit;
+exit;
 
         break;
-
 
 
     case "start":// CRÉATION / Mise à jour des données de configuration
@@ -338,7 +381,7 @@ switch(@$_GET['mode']) {
         @include_once($config_final_file);
 
         // Vérification du nonce et si la config n'est pas déjà créée
-        if($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$GLOBALS['db_user'] or !$GLOBALS['db'])) {
+        if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$GLOBALS['db_user'] or !$GLOBALS['db'])) {
             // Traduction de la page d'installation
             $add_translation = [
                 "Table already exists" => ["fr" => "La table existe déjà"],
@@ -350,7 +393,7 @@ switch(@$_GET['mode']) {
             add_translation($add_translation);
 
 
-            if(@$_POST['db_server'] and @$_POST['db_user'] and @$_POST['db']) {
+            if (@$_POST['db_server'] and @$_POST['db_user'] and @$_POST['db']) {
                 // BASE DE DONNEE
                 // Connexion à la bdd
                 $GLOBALS['connect'] = @new mysqli(addslashes($_POST['db_server']), addslashes($_POST['db_user']), addslashes($_POST['db_pwd']), addslashes($_POST['db']));
@@ -358,30 +401,31 @@ switch(@$_GET['mode']) {
                 // Désactive les exceptions qui bloquent l'exécution de php > 8.0
                 mysqli_report(MYSQLI_REPORT_OFF);
 
-                if($GLOBALS['connect']->connect_errno) {// Erreur
+                if ($GLOBALS['connect']->connect_errno) {// Erreur
                     ?>
-					<script>
-						submittable();
-						error("<?=mb_convert_encoding($GLOBALS['connect']->connect_error, 'UTF-8', mb_list_encodings());?>");
-					</script>
-					<?php
+                <script>
+                  submittable();
+                  error("<?=mb_convert_encoding($GLOBALS['connect']->connect_error, 'UTF-8', mb_list_encodings());?>");
+                </script>
+                <?php
                     exit;
                 } else {// Réussite
 
                     // Nom des tables
-                    $GLOBALS['table_content'] = addslashes($_POST['db_prefix']."content");
-                    $GLOBALS['table_tag'] = addslashes($_POST['db_prefix']."tag");
-                    $GLOBALS['table_meta'] = addslashes($_POST['db_prefix']."meta");
-                    $GLOBALS['table_user'] = addslashes($_POST['db_prefix']."user");
+                    $GLOBALS['table_content'] = addslashes($_POST['db_prefix'] . "content");
+                    $GLOBALS['table_tag'] = addslashes($_POST['db_prefix'] . "tag");
+                    $GLOBALS['table_meta'] = addslashes($_POST['db_prefix'] . "meta");
+                    $GLOBALS['table_user'] = addslashes($_POST['db_prefix'] . "user");
 
                     // Vérification de l'existence des base de données
-                    if($GLOBALS['connect']->query("SELECT id FROM ".$GLOBALS['table_content'])) {
+                    if ($GLOBALS['connect']->query("SELECT id FROM " . $GLOBALS['table_content'])) {
                         // Table déjà existante
-                        ?><script>light("<?php _e("Table already exists")?> : content");</script><?php
+                        ?>
+                    <script>light("<?php _e("Table already exists")?> : content");</script><?php
                     } else {
                         // Création de la base de données
                         $GLOBALS['connect']->query("
-							CREATE TABLE IF NOT EXISTS `".$GLOBALS['table_content']."` (
+							CREATE TABLE IF NOT EXISTS `" . $GLOBALS['table_content'] . "` (
 								`id` bigint(20) NOT NULL AUTO_INCREMENT,
 								`state` varchar(20) NOT NULL DEFAULT 'deactivate',
 								`lang` varchar(8) NOT NULL,
@@ -404,25 +448,26 @@ switch(@$_GET['mode']) {
 							) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 						");
 
-                        if($GLOBALS['connect']->error) {
+                        if ($GLOBALS['connect']->error) {
                             ?>
-							<script>
-								submittable();
-								error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
-							</script>
-							<?php
+                        <script>
+                          submittable();
+                          error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
+                        </script>
+                        <?php
                             exit;
                         }
                     }
 
                     // Vérification de l'existence des base de données
-                    if($GLOBALS['connect']->query("SELECT id FROM ".$GLOBALS['table_meta'])) {
+                    if ($GLOBALS['connect']->query("SELECT id FROM " . $GLOBALS['table_meta'])) {
                         // Table déjà existante
-                        ?><script>light("<?php _e("Table already exists")?> : meta");</script><?php
+                        ?>
+                    <script>light("<?php _e("Table already exists")?> : meta");</script><?php
                     } else {
                         // Création de la base de données
                         $GLOBALS['connect']->query("
-							CREATE TABLE IF NOT EXISTS `".$GLOBALS['table_meta']."` (
+							CREATE TABLE IF NOT EXISTS `" . $GLOBALS['table_meta'] . "` (
 								`id` bigint(20) NOT NULL DEFAULT '0',
 								`type` varchar(32) NOT NULL,
 								`cle` varchar(255) NOT NULL DEFAULT '',
@@ -434,25 +479,26 @@ switch(@$_GET['mode']) {
 							) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 						");
 
-                        if($GLOBALS['connect']->error) {
+                        if ($GLOBALS['connect']->error) {
                             ?>
-							<script>
-								submittable();
-								error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
-							</script>
-							<?php
+                        <script>
+                          submittable();
+                          error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
+                        </script>
+                        <?php
                             exit;
                         }
                     }
 
                     // Vérification de l'existence des base de données
-                    if($GLOBALS['connect']->query("SELECT id FROM ".$GLOBALS['table_tag'])) {
+                    if ($GLOBALS['connect']->query("SELECT id FROM " . $GLOBALS['table_tag'])) {
                         // Table déjà existante
-                        ?><script>light("<?php _e("Table already exists")?> : tag");</script><?php
+                        ?>
+                    <script>light("<?php _e("Table already exists")?> : tag");</script><?php
                     } else {
                         // Création de la base de données
                         $GLOBALS['connect']->query("
-							CREATE TABLE IF NOT EXISTS `".$GLOBALS['table_tag']."` (
+							CREATE TABLE IF NOT EXISTS `" . $GLOBALS['table_tag'] . "` (
 								`id` bigint(20) NOT NULL DEFAULT '0',
 								`zone` varchar(32) NOT NULL,
 								`lang` varchar(8) NOT NULL DEFAULT 'fr',
@@ -465,25 +511,26 @@ switch(@$_GET['mode']) {
 							) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 						");
 
-                        if($GLOBALS['connect']->error) {
+                        if ($GLOBALS['connect']->error) {
                             ?>
-							<script>
-								submittable();
-								error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
-							</script>
-							<?php
+                        <script>
+                          submittable();
+                          error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
+                        </script>
+                        <?php
                             exit;
                         }
                     }
 
                     // Vérification de l'existence des base de données
-                    if($GLOBALS['connect']->query("SELECT id FROM ".$GLOBALS['table_user'])) {
+                    if ($GLOBALS['connect']->query("SELECT id FROM " . $GLOBALS['table_user'])) {
                         // Table déjà existante
-                        ?><script>light("<?php _e("Table already exists")?> : user");</script><?php
+                        ?>
+                    <script>light("<?php _e("Table already exists")?> : user");</script><?php
                     } else {
                         // Création de la base de données
                         $GLOBALS['connect']->query("
-							CREATE TABLE IF NOT EXISTS `".$GLOBALS['table_user']."` (
+							CREATE TABLE IF NOT EXISTS `" . $GLOBALS['table_user'] . "` (
 								`id` bigint(20) NOT NULL AUTO_INCREMENT,
 								`state` varchar(20) NOT NULL DEFAULT 'active',
 								`auth` text NOT NULL,
@@ -502,17 +549,16 @@ switch(@$_GET['mode']) {
 							) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 						");
 
-                        if($GLOBALS['connect']->error) {
+                        if ($GLOBALS['connect']->error) {
                             ?>
-							<script>
-								submittable();
-								error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
-							</script>
-							<?php
+                        <script>
+                          submittable();
+                          error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
+                        </script>
+                        <?php
                             exit;
                         }
                     }
-
 
 
                     // UTILISATEUR
@@ -520,32 +566,32 @@ switch(@$_GET['mode']) {
 
                     // Droit d'edition de base
                     $auth = null;
-                    foreach($GLOBALS['add_content'] as $cle => $val) {
-                        $auth.=',add-'.$cle.',edit-'.$cle;
+                    foreach ($GLOBALS['add_content'] as $cle => $val) {
+                        $auth .= ',add-' . $cle . ',edit-' . $cle;
                     }
 
                     // Vérification de l'email
                     $email = filter_input(INPUT_POST, 'email_contact', FILTER_SANITIZE_EMAIL);
                     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                         ?>
-						<script>
-							submittable();
-							light("<?php _e("Wrong email")?>");
-						</script>
-						<?php
+                    <script>
+                      submittable();
+                      light("<?php _e("Wrong email")?>");
+                    </script>
+                    <?php
                         exit;
                     } else {
                         // Clean l'email pour éviter les injections
                         $email = $GLOBALS['connect']->real_escape_string($email);
 
                         // Crée un hash si pas déjà un chargé par le config maison
-                        if(!$GLOBALS['pub_hash']) {
+                        if (!$GLOBALS['pub_hash']) {
                             $GLOBALS['pub_hash'] = $_POST['pub_hash'] = make_pwd(mt_rand(32, 64), true, true);
                         }
-                        if(!$GLOBALS['priv_hash']) {
+                        if (!$GLOBALS['priv_hash']) {
                             $GLOBALS['priv_hash'] = $_POST['priv_hash'] = make_pwd(mt_rand(32, 64), true, true);
                         }
-                        if(!$GLOBALS['pwd_hash_loop']) {
+                        if (!$GLOBALS['pwd_hash_loop']) {
                             $GLOBALS['pwd_hash_loop'] = $_POST['pwd_hash_loop'] = mt_rand(60536, 65536);
                         }
 
@@ -553,59 +599,59 @@ switch(@$_GET['mode']) {
                         $_POST['email'] = $email;
 
                         // Vérifie que l'utilisateur n'existe pas déjà
-                        $sel = $GLOBALS['connect']->query("SELECT id FROM ".addslashes($_POST['db_prefix'])."user WHERE email='".$email."' AND state='active' LIMIT 1");
-                        if($res = $sel->fetch_assoc()) {// User déjà existant : on update ses données
+                        $sel = $GLOBALS['connect']->query("SELECT id FROM " . addslashes($_POST['db_prefix']) . "user WHERE email='" . $email . "' AND state='active' LIMIT 1");
+                        if ($res = $sel->fetch_assoc()) {// User déjà existant : on update ses données
                             $uid = $res['id'];
 
                             // Création de la requête
-                            $sql = "UPDATE ".addslashes($_POST['db_prefix'])."user SET ";
+                            $sql = "UPDATE " . addslashes($_POST['db_prefix']) . "user SET ";
                             $sql .= "state = 'active', ";
-                            $sql .= "auth = '".addslashes(implode(",", array_keys($GLOBALS['auth_level'])) . $auth)."', ";// Donne tous les droits
+                            $sql .= "auth = '" . addslashes(implode(",", array_keys($GLOBALS['auth_level'])) . $auth) . "', ";// Donne tous les droits
 
                             list($password, $unique_salt) = hash_pwd($_POST['password']);
 
-                            if($password and $unique_salt) {
-                                $sql .= "password = '".addslashes($password)."', ";
-                                $sql .= "salt = '".addslashes($unique_salt)."', ";
+                            if ($password and $unique_salt) {
+                                $sql .= "password = '" . addslashes($password) . "', ";
+                                $sql .= "salt = '" . addslashes($unique_salt) . "', ";
                                 //if($GLOBALS['security'] != 'high') $sql .= "token = '".addslashes(token_light((int)$_REQUEST['uid'], $unique_salt))."', "; Voir si utile !??
                             }
 
                             $sql .= "date_update = NOW() ";
 
-                            $sql .= "WHERE id = '".$res['id']."'";
+                            $sql .= "WHERE id = '" . $res['id'] . "'";
 
                             // Exécution de la requête
                             $GLOBALS['connect']->query($sql);
 
-                            if($GLOBALS['connect']->error) {
+                            if ($GLOBALS['connect']->error) {
                                 ?>
-								<script>
-									submittable();
-									error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
-								</script>
-								<?php
+                            <script>
+                              submittable();
+                              error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
+                            </script>
+                            <?php
                                 exit;
                             }
 
                             ?>
-							<script>
-								light("<?php _e("User already exists : update password")?>");
-							</script>
-							<?php
+                        <script>
+                          light("<?php _e("User already exists : update password")?>");
+                        </script>
+                        <?php
                         } else { // Création de l'utilisateur admin avec tous les droits
                             // Création de la requête
-                            $sql = "INSERT INTO ".addslashes($_POST['db_prefix'])."user SET ";
+                            $sql = "INSERT INTO " . addslashes($_POST['db_prefix']) . "user SET ";
                             $sql .= "state = 'active', ";
 
-                            $sql .= "auth = '".addslashes(implode(",", array_keys($GLOBALS['auth_level'])) . $auth)."', ";// Donne tous les droits
+                            $sql .= "auth = '" . addslashes(implode(",", array_keys($GLOBALS['auth_level'])) . $auth) . "', ";// Donne tous les droits
 
-                            $sql .= "email = '".addslashes($email)."', ";
+                            $sql .= "email = '" . addslashes($email) . "', ";
 
                             list($password, $unique_salt) = hash_pwd($_POST['password']);
 
-                            if($password and $unique_salt) {
-                                $sql .= "password = '".addslashes($password)."', ";
-                                $sql .= "salt = '".addslashes($unique_salt)."', ";
+                            if ($password and $unique_salt) {
+                                $sql .= "password = '" . addslashes($password) . "', ";
+                                $sql .= "salt = '" . addslashes($unique_salt) . "', ";
                                 //if($GLOBALS['security'] != 'high') $sql .= "token = '".addslashes(token_light((int)$_REQUEST['uid'], $unique_salt))."', "; Voir si utile !??
                             }
 
@@ -614,13 +660,13 @@ switch(@$_GET['mode']) {
                             // Exécution de la requête
                             $GLOBALS['connect']->query($sql);
 
-                            if($GLOBALS['connect']->error) {
+                            if ($GLOBALS['connect']->error) {
                                 ?>
-								<script>
-									submittable();
-									error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
-								</script>
-								<?php
+                            <script>
+                              submittable();
+                              error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
+                            </script>
+                            <?php
                                 exit;
                             } else {
                                 $uid = $GLOBALS['connect']->insert_id;
@@ -628,11 +674,10 @@ switch(@$_GET['mode']) {
                         }
 
 
-
                         // ECRITURE DE LA CONFIGRATION
 
                         // Ouverture du fichier config. Si pas de config on prend le sample
-                        if(file_exists($config_final_file)) {
+                        if (file_exists($config_final_file)) {
                             $config_file = file($config_final_file);
                         } else {
                             $config_file = file($config_sample_file);
@@ -640,7 +685,7 @@ switch(@$_GET['mode']) {
 
                         // Séparation des données du chemin du site
                         $parse_url = parse_url($_POST['scheme_domain_path']);
-                        $_POST['scheme'] = $parse_url['scheme']."://";
+                        $_POST['scheme'] = $parse_url['scheme'] . "://";
                         $_POST['domain'] = $GLOBALS['domain'] = $parse_url['host'];
                         $_POST['path'] = $GLOBALS['path'] = $parse_url['path'];
 
@@ -651,19 +696,19 @@ switch(@$_GET['mode']) {
                         $_POST['cache'] = $GLOBALS['cache'] = date("Ymd");
 
                         // On parcourt le fichier config
-                        foreach($config_file as $line_num => $line) {
+                        foreach ($config_file as $line_num => $line) {
                             // On récupère la clé de la variable en cours
                             preg_match("/GLOBALS\[\'([a-z_]+)\'\]/", $line, $match);
 
-                            if(isset($match[1])) {
+                            if (isset($match[1])) {
                                 $key = $match[1];
                             } else {
                                 $key = "";
                             }
 
                             // Changement de la ligne et ajout de la nouvelle variable
-                            if(isset($key) and isset($_POST[$key])) {
-                                $config_file[$line_num] = "\$GLOBALS['".$key."'] = \"".mb_convert_encoding($_POST[$key], 'ISO-8859-1', 'UTF-8')."\";\r\n";
+                            if (isset($key) and isset($_POST[$key])) {
+                                $config_file[$line_num] = "\$GLOBALS['" . $key . "'] = \"" . mb_convert_encoding($_POST[$key], 'ISO-8859-1', 'UTF-8') . "\";\r\n";
                             }
                         }
 
@@ -671,7 +716,7 @@ switch(@$_GET['mode']) {
 
                         // écriture dans le fichier config
                         $fopen = fopen($config_final_file, 'w');
-                        foreach($config_file as $line) {
+                        foreach ($config_file as $line) {
                             fwrite($fopen, $line);
                         }
                         fclose($fopen);
@@ -680,55 +725,52 @@ switch(@$_GET['mode']) {
                         chmod($config_final_file, 0666);
 
 
-
                         // AJOUTE LA PAGE D'ACCUEIL
                         // Vérifie qu'il n'y a pas déjà une page home
-                        $sel = $GLOBALS['connect']->query("SELECT id FROM ".addslashes($_POST['db_prefix'])."content WHERE url='index' LIMIT 1");
+                        $sel = $GLOBALS['connect']->query("SELECT id FROM " . addslashes($_POST['db_prefix']) . "content WHERE url='index' LIMIT 1");
                         $res = $sel->fetch_assoc();
-                        if(!@$res['id']) {// Page non existante : on la crée
+                        if (!@$res['id']) {// Page non existante : on la crée
                             // Ajout de la page d'accueil
-                            $sql = "INSERT ".addslashes($_POST['db_prefix'])."content SET ";
-                            $sql .= "title = '".addslashes(mb_convert_encoding(@$_POST['sitename'], 'ISO-8859-1', 'UTF-8'))."', ";
+                            $sql = "INSERT " . addslashes($_POST['db_prefix']) . "content SET ";
+                            $sql .= "title = '" . addslashes(mb_convert_encoding(@$_POST['sitename'], 'ISO-8859-1', 'UTF-8')) . "', ";
                             $sql .= "tpl = 'home', ";
                             $sql .= "url = 'index', ";
-                            $sql .= "lang = '".$GLOBALS['language'][0]."', ";
+                            $sql .= "lang = '" . $GLOBALS['language'][0] . "', ";
                             $sql .= "type = 'page', ";
-                            $sql .= "user_insert = '".(int)$uid."', ";
+                            $sql .= "user_insert = '" . (int)$uid . "', ";
                             $sql .= "date_insert = NOW() ";
                             $GLOBALS['connect']->query($sql);
 
-                            if($GLOBALS['connect']->error) {
+                            if ($GLOBALS['connect']->error) {
                                 ?>
-								<script>
-									submittable();
-									error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
-								</script>
-								<?php
+                            <script>
+                              submittable();
+                              error("<?=mb_convert_encoding($connect->error, 'UTF-8', mb_list_encodings());?>");
+                            </script>
+                            <?php
                                 exit;
                             } else {
                                 // Pose un cookie pour demander l'ouverture de l'admin automatiquement au chargement
-                                setcookie("autoload_edit", "true", time() + 60*60, $_POST['path'], $_POST['domain']);
+                                setcookie("autoload_edit", "true", time() + 60 * 60, $_POST['path'], $_POST['domain']);
                             }
                         }
-
 
 
                         // LOGIN AUTOMATIQUE
                         login();
 
 
-
                         // MESSAGE DE BIENVENUE et d'information qu'il faut créé la page d'accueil du site
                         ?>
-						<script>
-							light("<?php _e("Successful installation ! Redirection to homepage ...")?>");
-							setTimeout(function(){
-								 $("#error, #highlight, #light").slideUp("slow").fadeOut(function() {
-									window.location.reload();// window.location = window.location.href;
-								 });
-							}, 3000);
-						</script>
-						<?php
+                    <script>
+                      light("<?php _e("Successful installation ! Redirection to homepage ...")?>");
+                      setTimeout(function () {
+                        $("#error, #highlight, #light").slideUp("slow").fadeOut(function () {
+                          window.location.reload();// window.location = window.location.href;
+                        });
+                      }, 3000);
+                    </script>
+                    <?php
 
                     }
                 }

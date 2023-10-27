@@ -193,11 +193,10 @@ $add_translation = [
     "Public content" => ["fr" => "Contenu public"],
     "Public file" => ["fr" => "Dossier public"],
 
- "Page archived, redirecting" => ["fr" => "Page archivée, redirection en cours"],
- "Page deleted" => ["fr" => "Page supprimée"],
+    "Page archived, redirecting" => ["fr" => "Page archivée, redirection en cours"],
+    "Page deleted" => ["fr" => "Page supprimée"],
     "Page deleted, redirecting" => ["fr" => "Page supprimée, redirection en cours"],
 
 
     "Log out" => ["fr" => "Se déconnecter"]
 ];
-

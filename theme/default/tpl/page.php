@@ -1,14 +1,16 @@
-<?php if(!$GLOBALS['domain']) exit;?>
+<?php if (!$GLOBALS['domain']) {
+    exit;
+} ?>
 
 <section class="mw960p mod center">
 
-	<?php h1('title', 'mbn tc up color')?>
-	<?php h2('sstitre', 'mbn tc big color-alt')?>
+    <?php h1('title', 'mbn tc up color') ?>
+    <?php h2('sstitre', 'mbn tc big color-alt') ?>
 
-	<article class="pal ptm">
+    <article class="pal ptm">
 
-		<?php txt('texte')?>
+        <?php txt('texte') ?>
 
-	</article>
+    </article>
 
 </section>

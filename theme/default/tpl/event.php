@@ -1,5 +1,5 @@
 <?php
-if(!$GLOBALS['domain']) {
+if (!$GLOBALS['domain']) {
     exit;
 }
 
