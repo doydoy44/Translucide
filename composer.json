@@ -10,6 +10,7 @@
     "phpstan/phpstan": "^1.10"
   },
   "require": {
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-mysqli": "*"
   }
 }
