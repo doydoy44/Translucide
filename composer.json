@@ -2,7 +2,8 @@
   "name": "translucide/translucide",
   "autoload": {
     "psr-4": {
-      "Translucide\\": "src/"
+      "Translucide\\": "src/",
+      "TranslucideApi\\": "api/"
     }
   },
   "require-dev": {
@@ -11,6 +12,11 @@
   },
   "require": {
     "ext-json": "*",
-    "ext-mysqli": "*"
+    "ext-mysqli": "*",
+    "ext-fileinfo": "*",
+    "ext-gd": "*",
+    "ext-curl": "*",
+    "ext-exif": "*",
+    "ext-iconv": "*"
   }
 }

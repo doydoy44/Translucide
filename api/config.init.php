@@ -56,14 +56,14 @@ if (
 
 // Variables de la base de données
 $GLOBALS['db_prefix'] = '';
-$GLOBALS['db_charset'] = 'utf8mb4';// utf8 => classique || utf8mb4 => pour les emoji mac
+$GLOBALS['db_charset'] = 'utf8mb4'; // utf8 => classique || utf8mb4 => pour les emoji mac
 
 $GLOBALS['table_content'] = $GLOBALS['tc'] = $GLOBALS['db_prefix'] . 'content';
 $GLOBALS['table_meta'] = $GLOBALS['tm'] = $GLOBALS['db_prefix'] . 'meta';
 $GLOBALS['table_tag'] = $GLOBALS['tt'] = $GLOBALS['db_prefix'] . 'tag';
 $GLOBALS['table_user'] = $GLOBALS['tu'] = $GLOBALS['db_prefix'] . 'user';
 
-if ($dev) {// Dev local
+if ($dev) { // Dev local
     $GLOBALS['db_server'] = '';
     $GLOBALS['db_user'] = '';
     $GLOBALS['db'] = '';
@@ -89,14 +89,14 @@ $GLOBALS['theme'] = '';
 $GLOBALS['sitename'] = null;
 
 
-if ($dev) {// Dev local
+if ($dev) { // Dev local
     $GLOBALS['scheme'] = '';
 } else {
     $GLOBALS['scheme'] = '';
 }
 
 
-if ($dev) {// Dev local
+if ($dev) { // Dev local
     $GLOBALS['domain'] = '';
 } else {
     $GLOBALS['domain'] = '';
@@ -105,7 +105,7 @@ if ($dev) {// Dev local
 
 $GLOBALS['path'] = '';
 
-$GLOBALS['replace_path'] = '';// "/" Pour les chemins des média sur les sites avec dossier dans les url (filtre)
+$GLOBALS['replace_path'] = ''; // "/" Pour les chemins des média sur les sites avec dossier dans les url (filtre)
 
 
 $GLOBALS['email_contact'] = '';
@@ -119,11 +119,11 @@ $GLOBALS['offline'] = null;
 
 
 // Utilisation de librairie minifier
-if ($dev) {// Dev local
+if ($dev) { // Dev local
     $GLOBALS['min'] = '';
 } else {
     $GLOBALS['min'] = '';
-}//.min
+} //.min
 
 
 // Générer une page en statique html
@@ -150,8 +150,8 @@ $GLOBALS['cache'] = "";
 
 
 // Include
-$GLOBALS['function'] = '';// fonction du theme
-$GLOBALS['after_get_tag'] = '';// Action avant d'afficher l'header
+$GLOBALS['function'] = ''; // fonction du theme
+$GLOBALS['after_get_tag'] = ''; // Action avant d'afficher l'header
 
 
 // https://developers.facebook.com/apps/
@@ -168,8 +168,8 @@ $GLOBALS['matomo_url'] = '';
 $GLOBALS['matomo_id'] = '1';
 
 // https://plausible.io
-$GLOBALS['plausible'] = '';// $GLOBALS['domain']
-$GLOBALS['plausible_path'] = '';// /js/script.file-downloads.js
+$GLOBALS['plausible'] = ''; // $GLOBALS['domain']
+$GLOBALS['plausible_path'] = ''; // /js/script.file-downloads.js
 
 
 // Toolbox
@@ -236,11 +236,11 @@ $GLOBALS['session_expiration'] = 60 * 60 * 24 * 30;
 $GLOBALS['public_account'] = false;
 
 // Statue d'activation par défaut des comptes utilisateur
-$GLOBALS['default_state'] = 'active';// moderate / mail / active / deactivate
+$GLOBALS['default_state'] = 'active'; // moderate / mail / active / deactivate
 $GLOBALS['mail_moderate'] = true;
 
 // Niveaux d'authentification par défaut des comptes utilisateur
-$GLOBALS['default_auth'] = 'edit-public';// add-media-public
+$GLOBALS['default_auth'] = 'edit-public'; // add-media-public
 
 // Info supplémentaire sur l'utilisateur
 $GLOBALS['user_info'] = null;
@@ -295,7 +295,7 @@ $GLOBALS['add_menu'] = [
 
 
 // Bouton en bas en layer
-$GLOBALS['bt_login'] = true;// Possibilité de mettre l'emplacement ou le bouton sera injectée. ex : "footer .webmaster"
+$GLOBALS['bt_login'] = true; // Possibilité de mettre l'emplacement ou le bouton sera injectée. ex : "footer .webmaster"
 $GLOBALS['bt_edit'] = true;
 $GLOBALS['bt_top'] = false;
 
@@ -330,11 +330,11 @@ $GLOBALS['max_image_size'] = '1920x1080';
 $GLOBALS['jpg_quality'] = 90;
 $GLOBALS['png_quality'] = 9;
 $GLOBALS['webp_quality'] = 90;
-$GLOBALS['img_green'] = '100';//ko
-$GLOBALS['img_warning'] = '400';//ko
-$GLOBALS['imgs_green'] = '800';//ko
-$GLOBALS['imgs_warning'] = '1000';//ko
-$GLOBALS['imgs_num'] = '15';// nombre d'image max
+$GLOBALS['img_green'] = '100'; //ko
+$GLOBALS['img_warning'] = '400'; //ko
+$GLOBALS['imgs_green'] = '800'; //ko
+$GLOBALS['imgs_warning'] = '1000'; //ko
+$GLOBALS['imgs_num'] = '15'; // nombre d'image max
 
 
 // On peut voir les dossiers dans la librairie des médias
@@ -348,7 +348,7 @@ $GLOBALS['media_dir'] = 'media';
 $GLOBALS['favicon'] = '';
 
 // Librairie d'icons spécifiques à la template
-$GLOBALS['icons'] = '';// $GLOBALS['scheme'].$GLOBALS['domain'].$GLOBALS['path']."api/icons/icons.min.css"
+$GLOBALS['icons'] = ''; // $GLOBALS['scheme'].$GLOBALS['domain'].$GLOBALS['path']."api/icons/icons.min.css"
 
 
 // Utilisation de global.css ? à supprimer à termes (06/01/2021)
@@ -360,11 +360,11 @@ $GLOBALS['style.css'] = null;
 
 
 // Librairie externe
-$GLOBALS['jquery'] = $GLOBALS['path'] . 'api/jquery.min.js';// //ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js
+$GLOBALS['jquery'] = $GLOBALS['path'] . 'api/jquery.min.js'; // //ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js
 
 $GLOBALS['jquery_ui'] = '//ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js';
 
-$GLOBALS['jquery_ui_css'] = '//ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css';// cupertino flick smoothness base
+$GLOBALS['jquery_ui_css'] = '//ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css'; // cupertino flick smoothness base
 
 
 // Url pour faire un lien vers un tutoriel externe
@@ -380,7 +380,7 @@ $id = $title = $description = $image = $tag = null;
 $mode = $uid = $error = $robots = $robots_data = $close = null;
 $GLOBALS['filter'] = [];
 $GLOBALS['translation'] = [];
-$GLOBALS['content'] = [];
+ $GLOBALS['content'] = [];
 $GLOBALS['editkey'] = 1;
 $GLOBALS['home'] = $GLOBALS['scheme'] . $GLOBALS['domain'] . $GLOBALS['path'];
 $GLOBALS['root'] = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . 'theme/' . $GLOBALS['theme'] . ($GLOBALS['theme'] ? '/' : '');
@@ -389,5 +389,5 @@ $GLOBALS['root'] = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . 'theme/' . $GL
 // Numéro de la page en cours
 $page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
 
-// Nombre d'entré par page
+// Nombre d'entrées par page
 $num_pp = 20;

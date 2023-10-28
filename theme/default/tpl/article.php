@@ -1,10 +1,23 @@
 <?php
+
+use Translucide\db\DataBase;
+use Translucide\services\Globals;
+use Translucide\services\UtilsFunctionsContent;
+use Translucide\services\UtilsFunctionsLanguage;
+use Translucide\services\UtilsFunctionsNavigation;
+
 if (!$GLOBALS['domain']) {
     exit;
 }
 if (!@$GLOBALS['content']['titre']) {
     $GLOBALS['content']['titre'] = $GLOBALS['content']['title'];
 }
+
+$dataBase = DataBase::getInstance();
+$contentFc = UtilsFunctionsContent::getInstance();
+$languageFc = UtilsFunctionsLanguage::getInstance();
+$navigation = UtilsFunctionsNavigation::getInstance();
+$globals = Globals::getInstance();
 ?>
 
 <style>
@@ -16,11 +29,11 @@ if (!@$GLOBALS['content']['titre']) {
 
 <section class="mw960p mod center mtm mbl">
 
-    <?php h1('titre', 'tc up') ?>
+    <?php $contentFc->h1('titre', 'tc up') ?>
 
     <article class="fl w80 prl pbm">
 
-        <?php txt('texte', ['dir' => 'actu']) ?>
+        <?php $contentFc->txt('texte', ['dir' => 'actu']) ?>
 
         <?php if ($res['tpl'] == "event-formulaire") {
             include 'contact.php';
@@ -36,13 +49,13 @@ if (!@$GLOBALS['content']['titre']) {
         if (stristr($res['tpl'], 'event')) {
             ?>
             <div class="tc mbm"><?php
-            if (@$GLOBALS["content"]["aaaa-mm-jj"]) {
+            if (@$GLOBALS["contentFc"]["aaaa-mm-jj"]) {
                 //@todo faire une transformation de la date en une ligne au lieu du explode
-                $date_debut = explode("-", $GLOBALS["content"]["aaaa-mm-jj"]);
-                echo '<h3 class="big tc mtn mbt">' . __("Début de l'événement") . '</h3>' . $date_debut['2'] . '/' . $date_debut['1'] . '/' . $date_debut['0'] . '<br>';
+                $date_debut = explode("-", $GLOBALS["contentFc"]["aaaa-mm-jj"]);
+                echo '<h3 class="big tc mtn mbt">' . $languageFc->__("Début de l'événement") . '</h3>' . $date_debut['2'] . '/' . $date_debut['1'] . '/' . $date_debut['0'] . '<br>';
             }
 
-            input("aaaa-mm-jj", ["type" => "hidden", "class" => "meta tc"]);
+            $contentFc->input("aaaa-mm-jj", ["type" => "hidden", "class" => "meta tc"]);
 
             ?></div><?php
         } ?>
@@ -50,9 +63,9 @@ if (!@$GLOBALS['content']['titre']) {
         <!-- Tag -->
         <div class="tc">
 
-            <h3 class="big tc mtn mbt"><?php _e("Catégories") ?></h3>
+            <h3 class="big tc mtn mbt"><?php $languageFc->_e("Catégories") ?></h3>
 
-            <?php tag('actualites') ?>
+            <?php $contentFc->tag('actualites') ?>
 
             <script>
               if (!$(".editable-tag").text()) $("#actualites").prev("h3").hide();
@@ -64,37 +77,44 @@ if (!@$GLOBALS['content']['titre']) {
 
         <!-- Liste des autres articles -->
         <?php
-        $sel_article = $connect->query("SELECT * FROM " . $table_content . " WHERE type='article' AND lang='" . $lang . "' AND state='active' AND id!='" . $res['id'] . "' ORDER BY date_insert DESC LIMIT 0, 3");
-if ($sel_article->num_rows) { ?>
-            <h3 class="big tc mtn mbt"><?php _e("Derniers Articles") ?></h3>
+        $sel_article = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_content . " WHERE type='article' AND lang='" . $globals->lang . "' AND state='active' AND id!='" . $res['id'] . "' ORDER BY date_insert DESC LIMIT 0, 3");
+        if ($sel_article->num_rows) { ?>
+            <h3 class="big tc mtn mbt"><?php $languageFc->_e("Derniers Articles") ?></h3>
 
             <ul class="unstyled pan">
-                <?php
-        while ($res_article = $sel_article->fetch_assoc()) {
+            <?php
+                while ($res_article = $sel_article->fetch_assoc()) {
             ?>
-                    <li class="medium mbs mls"><a href="<?= make_url($res_article['url']); ?>" class="tdn"><i
-                                    class="fa-li fa fa-fw fa-rss fl mrt"></i> <?= $res_article['title'] ?></a></li>
-                    <?php
-        }
-    ?>
+                    <li class="medium mbs mls">
+                        <a href="<?= $navigation->make_url($res_article['url']); ?>" class="tdn">
+                            <i class="fa-li fa fa-fw fa-rss fl mrt"></i>
+                            <?= $res_article['title'] ?>
+                        </a>
+                    </li>
+            <?php
+                }
+            ?>
             </ul>
         <?php } ?>
 
 
         <!-- Liste des autres évènements -->
         <?php
-        $sel_article = $connect->query("SELECT * FROM " . $table_content . " WHERE type='event' AND lang='" . $lang . "' AND state='active' AND id!='" . $res['id'] . "' ORDER BY date_insert DESC LIMIT 0, 3");
+        $sel_article = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_content . " WHERE type='event' AND lang='" . $globals->lang . "' AND state='active' AND id!='" . $res['id'] . "' ORDER BY date_insert DESC LIMIT 0, 3");
 if ($sel_article->num_rows) { ?>
-            <h3 class="big tc ptm mbt"><?php _e("Derniers Évènements") ?></h3>
+            <h3 class="big tc ptm mbt"><?php $languageFc->_e("Derniers Évènements") ?></h3>
 
             <ul class="unstyled pan">
                 <?php
 
         while ($res_article = $sel_article->fetch_assoc()) {
             ?>
-                    <li class="medium mbs mls"><a href="<?= make_url($res_article['url']); ?>" class="tdn"><i
-                                    class="fa-li fa fa-fw fa-calendar-empty fl mrt"></i> <?= $res_article['title'] ?>
-                        </a></li>
+                    <li class="medium mbs mls">
+                        <a href="<?= $navigation->make_url($res_article['url']); ?>" class="tdn">
+                            <i class="fa-li fa fa-fw fa-calendar-empty fl mrt"></i>
+                            <?= $res_article['title'] ?>
+                        </a>
+                    </li>
                     <?php
         }
     ?>

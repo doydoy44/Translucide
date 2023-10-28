@@ -1,5 +1,13 @@
 <?php
 
+use Translucide\services\UtilsFunctionsConnexion;
+use Translucide\services\UtilsFunctionsContent;
+use Translucide\services\UtilsFunctionsLanguage;
+
+$contentFc = UtilsFunctionsContent::getInstance();
+$languageFc = UtilsFunctionsLanguage::getInstance();
+$connexion = UtilsFunctionsConnexion::getInstance();
+
 switch (@$_GET['mode']) {
     // AFFICHAGE DU FORMULAIRE DE CONTACT
     default:
@@ -25,48 +33,57 @@ switch (@$_GET['mode']) {
 
             <article class="w80 center">
 
-                <?php h1('titre', 'tc') ?>
+                <?php $contentFc->h1('titre', 'tc') ?>
 
-                <?php txt('texte', 'mbl') ?>
+                <?php $contentFc->txt('texte', 'mbl') ?>
 
                 <form id="contact">
 
-                    <?php txt('texte-champs-obligatoires', 'mbm') ?>
+                    <?php $contentFc->txt('texte-champs-obligatoires', 'mbm') ?>
 
                     <div class="mbm">
-                        <label for="email-from"><?php span('texte-label-email') ?><span class="red">*</span></label><br>
+                        <label for="email-from">
+                            <?php $contentFc->span('texte-label-email') ?>
+                            <span class="red">*</span>
+                        </label>
+                        <br>
                         <input type="email" name="email-from" id="email-from" autocomplete="email"
-                               placeholder="<?php _e("Email") ?>" class="w40 vatt" required>
+                               placeholder="<?php $languageFc->_e("Email") ?>" class="w40 vatt" required>
 
-                        <label for="reponse" class="hidden" aria-hidden="true"><?php _e("Email") ?></label>
+                        <label for="reponse" class="hidden" aria-hidden="true"><?php $languageFc->_e("Email") ?></label>
                         <input name="reponse" id="reponse" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$"
                                placeholder="nom@domaine.com" aria-hidden="true">
                     </div>
 
                     <div>
-                        <label for="message"><?php span('texte-label-message') ?><span class="red">*</span></label>
-                        <textarea name="message" id="message" placeholder="<?php _e("Message") ?>" class="w100 mbt"
-                                  style="height: 200px;" required></textarea>
+                        <label for="message">
+                            <?php $contentFc->span('texte-label-message') ?>
+                            <span class="red">*</span>
+                        </label>
+                        <textarea name="message" id="message"
+                                  placeholder="<?php $languageFc->_e("Message") ?>"
+                                  class="w100 mbt"
+                                  style="height: 200px;" required>
+                        </textarea>
                     </div>
 
-
                     <div class="mod">
-
                         <!-- Question -->
                         <?php
                         $chiffre = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-        $operators = ["+", "-"];
-        $operator = $operators[array_rand($operators)];
-        $nb1 = rand(1, 5);//10
-        $nb2 = ($operator === '-') ? mt_rand(1, $nb1) : mt_rand(1, 5);// on évite les résultats négatifs en cas de soustraction
-        eval('$question = strval(' . $nb1 . $operator . $nb2 . ');');
-        $question_hash = hash('sha256', $question . $GLOBALS['pub_hash']);
-        // On change le signe "-" moins de calcul en "−" lisible en accessibilité
-        ?>
+                        $operators = ["+", "-"];
+                        $operator = $operators[array_rand($operators)];
+                        $nb1 = rand(1, 5); //10
+                        $nb2 = ($operator === '-') ? mt_rand(1, $nb1) : mt_rand(1, 5); // on évite les résultats négatifs en cas de soustraction
+                        eval('$question = strval(' . $nb1 . $operator . $nb2 . ');');
+                        $question_hash = hash('sha256', $question . $GLOBALS['pub_hash']);
+                        // On change le signe "-" moins de calcul en "−" lisible en accessibilité
+                        ?>
                         <div>
                             <label for="question">
-                                <?php span('texte-label-question') ?><span class="red">*</span> :
-                                <?= (__($chiffre[$nb1]) . " " . ($operator == '-' ? '−' : $operator) . " " . __($chiffre[$nb2])); ?>
+                                <?php $contentFc->span('texte-label-question') ?>
+                                <span class="red">*</span> :
+                                <?= ($languageFc->__($chiffre[$nb1]) . " " . ($operator == '-' ? '−' : $operator) . " " . $languageFc->__($chiffre[$nb2])); ?>
                                 =
                             </label>
                             <input type="text" name="question" id="question" placeholder="?" class="w50p tc"
@@ -77,37 +94,34 @@ switch (@$_GET['mode']) {
 
                         <!-- RGPD -->
                         <div class="mtm">
-                            <label for="rgpdcheckbox" class="inline" style="text-transform: none;"><?php span('rgpd') ?>
-                                <span class="red">*</span></label>
+                            <label for="rgpdcheckbox" class="inline" style="text-transform: none;">
+                                <?php $contentFc->span('rgpd') ?>
+                                <span class="red">*</span>
+                            </label>
                             <input type="checkbox" name="rgpdcheckbox" id="rgpdcheckbox" required>
                         </div>
-
                     </div>
-
 
                     <!-- Bouton envoyer -->
                     <div class="fr mtm mbl">
                         <button type="submit" id="send" class="bt bold">
-                            <?php _e(["Send" => ["fr" => "Envoyer"]]) ?>
+                            <?php $languageFc->_e(["Send" => ["fr" => "Envoyer"]]) ?>
                             <i class="fa fa-mail-alt mlt" aria-hidden="true"></i>
                         </button>
                     </div>
 
 
                     <input type="hidden" name="rgpd_text"
-                           value="<?= htmlspecialchars(@$GLOBALS['content']['rgpd']); ?>">
+                           value="<?= htmlspecialchars(@ $GLOBALS['content']['rgpd']); ?>">
 
-                    <input type="hidden" name="nonce_contact" value="<?= nonce("nonce_contact"); ?>">
+                    <input type="hidden" name="nonce_contact"
+                           value="<?= $connexion->nonce("nonce_contact"); ?>">
 
                     <input type="hidden" name="referer"
                            value="<?= htmlspecialchars((isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "")); ?>">
-
                 </form>
-
             </article>
-
         </section>
-
 
         <script>
           // Titre de la page en cours
@@ -120,7 +134,7 @@ switch (@$_GET['mode']) {
             $("#contact #send .fa-cog").removeClass("fa-spin fa-cog").addClass("fa-mail-alt");
 
             // Activation des champs du formulaire
-            $("#contact input, #contact textarea, #contact button").removeClass("disabled");//readonly .attr("aria-disabled", true)
+            $("#contact input, #contact textarea, #contact button").removeClass("disabled"); //readonly .attr("aria-disabled", true)
 
             // On peut soumettre le formulaire avec la touche entrée
             //$("#contact").on("submit", function(event) { send_mail(event) });
@@ -141,11 +155,11 @@ switch (@$_GET['mode']) {
               $("#contact #send .fa-mail-alt").removeClass("fa-mail-alt").addClass("fa-spin fa-cog");
 
               // Désactive le formulaire
-              $("#contact input, #contact textarea, #contact button").addClass("disabled");//readonly .attr("aria-disabled", true)
+              $("#contact input, #contact textarea, #contact button").addClass("disabled"); //readonly .attr("aria-disabled", true)
 
               // Désactive le bouton submit (pour les soumissions avec la touche entrée)
               //$("#contact").off("submit");
-              $("#contact button").attr("aria-disabled", true);// => ne permet pas le focus sur le bt une fois envoyer
+              $("#contact button").attr("aria-disabled", true); // => ne permet pas le focus sur le bt une fois envoyer
 
               $.ajax(
                 {
@@ -163,7 +177,7 @@ switch (@$_GET['mode']) {
             // Message d'erreur en cas de mauvaise saisie du mail. Pour l'accessibilité
             var email_from = document.getElementById("email-from");
             email_from.addEventListener("invalid", function () {
-              email_from.setCustomValidity("<?_e("Invalid email")?>. <?_e("Expected format")?> : dupont@exemple.com")
+              email_from.setCustomValidity("<?$languageFc->_e("Invalid email")?>. <?$languageFc->_e("Expected format")?> : dupont@exemple.com")
             }, false);
             email_from.addEventListener("input", function () {
               email_from.setCustomValidity("");
@@ -186,12 +200,12 @@ switch (@$_GET['mode']) {
         //print_r($_REQUEST);
 
         // Si on a posté le formulaire
-        if (isset($_POST["email-from"]) and $_POST["message"] and isset($_POST["question"]) and !$_POST["reponse"]) {// reponse pour éviter les bots qui remplisse tous les champs
-            include_once("../../../config.php");// Les variables
+        if (isset($_POST["email-from"]) and $_POST["message"] and isset($_POST["question"]) and !$_POST["reponse"]) { // reponse pour éviter les bots qui remplisse tous les champs
+            include_once("../../../config.php"); // Les variables
 
-            if ($_SESSION["nonce_contact"] and $_SESSION["nonce_contact"] == $_POST["nonce_contact"]) {// Protection CSRF
-                if (filter_var($_POST["email-from"], FILTER_VALIDATE_EMAIL)) {// Email valide
-                    if (hash('sha256', $_POST["question"] . $GLOBALS['pub_hash']) == $_POST["question_hash"]) {// Captcha valide
+            if ($_SESSION["nonce_contact"] and $_SESSION["nonce_contact"] == $_POST["nonce_contact"]) { // Protection CSRF
+                if (filter_var($_POST["email-from"], FILTER_VALIDATE_EMAIL)) { // Email valide
+                    if (hash('sha256', $_POST["question"] . $GLOBALS['pub_hash']) == $_POST["question_hash"]) { // Captcha valide
                         $from = ($_POST["email-from"] ? htmlspecialchars($_POST["email-from"]) : $GLOBALS['email_contact']);
 
 
@@ -215,9 +229,9 @@ switch (@$_GET['mode']) {
 
 
                         // header
-                        $header = "From:" . $GLOBALS['email_contact'] . "\r\n";// Pour une meilleure délivrabilité des mails
+                        $header = "From:" . $GLOBALS['email_contact'] . "\r\n"; // Pour une meilleure délivrabilité des mails
                         $header .= "Reply-To: " . $from . "\r\n";
-                        $header .= "Content-Type: text/plain; charset=utf-8\r\n";// utf-8 ISO-8859-1
+                        $header .= "Content-Type: text/plain; charset=utf-8\r\n"; // utf-8 ISO-8859-1
 
 
                         if (mail($GLOBALS['email_contact'], $subject, stripslashes($message), $header)) {
@@ -236,7 +250,7 @@ switch (@$_GET['mode']) {
                               error(__("Error sending email"), 'nofade', $("#send"));
                               document.title = title + ' - ' + __("Error sending email");
 
-                              activation_form();// On rétablie le formulaire
+                              activation_form(); // On rétablie le formulaire
                             </script>
                             <?php
                             //echo error_get_last()['message']; print_r(error_get_last());
@@ -247,7 +261,7 @@ switch (@$_GET['mode']) {
                           error(__("Wrong answer to the verification question!"), 'nofade', $("#question"));
                           document.title = title + ' - ' + __("Wrong answer to the verification question!");
 
-                          activation_form();// On rétablie le formulaire
+                          activation_form(); // On rétablie le formulaire
                         </script>
                         <?php
                     }
@@ -257,7 +271,7 @@ switch (@$_GET['mode']) {
                       error(__("Invalid email!"), 'nofade', $("#email-from"));
                       document.title = title + ' - ' + __("Invalid email!");
 
-                      activation_form();// On rétablie le formulaire
+                      activation_form(); // On rétablie le formulaire
                     </script>
                     <?php
                 }
@@ -266,4 +280,3 @@ switch (@$_GET['mode']) {
 
         break;
 }
-?>
