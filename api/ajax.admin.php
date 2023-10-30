@@ -18,17 +18,17 @@ include_once(dirname(__FILE__)."/../src/services/UtilsFunctionsNavigation.php");
 include_once(dirname(__FILE__)."/../src/services/UtilsFunctionsImage.php");
 include_once(dirname(__FILE__)."/../src/services/Globals.php");
 
-$dataBase = DataBase::getInstance();
-$connexion = UtilsFunctionsConnexion::getInstance();
-$languageFc = UtilsFunctionsLanguage::getInstance();
-$navigation = UtilsFunctionsNavigation::getInstance();
-$image = UtilsFunctionsImage::getInstance();
 $globals = Globals::getInstance();
+$dataBase = DataBase::getInstance();
+$connexionFn = UtilsFunctionsConnexion::getInstance();
+$languageFn = UtilsFunctionsLanguage::getInstance();
+$navigationFn = UtilsFunctionsNavigation::getInstance();
+$imageFn = UtilsFunctionsImage::getInstance();
 
-$globals->lang = $languageFc->get_lang(); // Sélectionne  la langue
-$languageFc->load_translation('api'); // Chargement des traductions du système
-if (@$GLOBALS['theme_translation']) {
-    $languageFc->load_translation('theme');
+$globals->setLang($languageFn->get_lang()); // Sélectionne  la langue
+$languageFn->load_translation('api'); // Chargement des traductions du système
+if ($globals->getThemeTranslation()) {
+    $languageFn->load_translation('theme');
 }// Chargement des traductions du theme
 
 
@@ -40,12 +40,12 @@ switch ($_GET['mode']) {
 
         unset($_SESSION['nonce']); // Pour éviter les interférences avec un autre nonce de session
 
-        $connexion->login('high', 'edit-' . ($_GET['type'] ? $navigation->encode($_GET['type']) : "page")); // Vérifie que l'on a le droit d'éditer les contenus
+        $connexionFn->login('high', 'edit-' . ($_GET['type'] ? $navigationFn->encode($_GET['type']) : "page")); // Vérifie que l'on a le droit d'éditer les contenus
 
         // Si on doit recharger la page avant de lancer le mode édition
         if (isset($_REQUEST['callback']) and $_REQUEST['callback'] == "reload_edit") {
             // Pose un cookie pour demander l'ouverture de l'admin automatiquement au chargement
-            setcookie("autoload_edit", "true", time() + 60 * 60, $GLOBALS['path'], $GLOBALS['domain']);
+            setcookie("autoload_edit", "true", time() + 60 * 60, $globals->getPath(), $globals->getDomain());
             ?>
             <script>
               reload();
@@ -57,7 +57,7 @@ switch ($_GET['mode']) {
             if (@$_GET['id'] and @$_GET['date_update']) {
                 include_once("db.php"); // Connexion à la db
 
-                $sel = $dataBase->getConnect()->query("SELECT " . $globals->tc . ".state, " . $globals->tc . ".date_update, " . $globals->tu . ".name, " . $globals->tu . ".email FROM " . $globals->tc . " JOIN " . $globals->tu . " ON " . $globals->tu . ".id = " . $globals->tc . ".user_update WHERE " . $globals->tc . ".id='" . (int)$_GET['id'] . "' LIMIT 1");
+                $sel = $dataBase->getConnect()->query("SELECT " . $globals->getTc() . ".state, " . $globals->getTc() . ".date_update, " . $globals->getTu() . ".name, " . $globals->getTu() . ".email FROM " . $globals->getTc() . " JOIN " . $globals->getTu() . " ON " . $globals->getTu() . ".id = " . $globals->getTc() . ".user_update WHERE " . $globals->getTc() . ".id='" . (int)$_GET['id'] . "' LIMIT 1");
                 $res = $sel->fetch_assoc();
 
                 if (@$_GET['date_update'] != $res['date_update'] and $res['email']) {
@@ -80,87 +80,87 @@ switch ($_GET['mode']) {
             }
             // JS pour mettre en mode édit les contenus et ajout d'un nonce pour signer les formulaires
             ?>
-            <input type="hidden" name="nonce" id="nonce" value="<?= $connexion->nonce("nonce"); ?>">
-            <link rel="stylesheet" href="<?= $GLOBALS['jquery_ui_css'] ?>">
+            <input type="hidden" name="nonce" id="nonce" value="<?= $connexionFn->nonce("nonce"); ?>">
+            <link rel="stylesheet" href="<?= $globals->getJqueryUiCss() ?>">
 
             <!-- Barre du haut avec bouton sauvegarder et option -->
             <div id="admin-bar" class="none">
                 <div id="user" class="fl pat">
-                    <i class="fa fa-fw fa-user-circle bigger" title="<?php $languageFc->_e("Show user info") ?>"></i>
+                    <i class="fa fa-fw fa-user-circle bigger" title="<?php $languageFn->_e("Show user info") ?>"></i>
                 </div>
 
                 <!-- list/bars -->
                 <div id="list-content" class="fl pat">
-                    <i class="fa fa-menu vam" title="<?php $languageFc->_e("List of contents") ?>"></i>
+                    <i class="fa fa-menu vam" title="<?php $languageFn->_e("List of contents") ?>"></i>
                 </div>
 
-                <a href="<?= ($GLOBALS['tutoriel'] ?? $GLOBALS['path'] . 'tutoriel.html') ?>"
+                <a href="<?= ($globals->getTutoriel() ?? $globals->getPath() . 'tutoriel.html') ?>"
                    id="tutoriel"
                    class="fl pat"
                    target="_blank"
-                   title="<?php echo $languageFc->__("Editing tutorial") . ' - ' . $languageFc->__("New window"); ?>"
+                   title="<?php echo $languageFn->__("Editing tutorial") . ' - ' . $languageFn->__("New window"); ?>"
                 >
                     <i class="fa fa-info-circled vam"></i>
                 </a>
 
                 <div id="meta-responsive" class="fl mat none small-screen">
-                    <i class="fa fa-fw fa-pencil bigger" title="<?php $languageFc->_e("Page title") ?>"></i>
+                    <i class="fa fa-fw fa-pencil bigger" title="<?php $languageFn->_e("Page title") ?>"></i>
                 </div>
 
                 <div id="meta" class="fl mat w30 noss">
                     <input type="text" id="title" value=""
-                           placeholder="<?php $languageFc->_e("Page title") ?>"
-                           title="<?php $languageFc->_e("Page title") ?>"
+                           placeholder="<?php $languageFn->_e("Page title") ?>"
+                           title="<?php $languageFn->_e("Page title") ?>"
                            maxlength="70" class="w100 bold">
                     <div class="w50">
                         <div class="tooltip slide-left fire pas mas mlt">
                             <div class="small">
-                                <?php $languageFc->_e("Description for search engines") ?>
+                                <?php $languageFn->_e("Description for search engines") ?>
                                 <div class="fr">
                                     <input type="checkbox" id="noindex">
                                     <label for="noindex"
                                            class="mrs"
-                                           title="<?php $languageFc->_e("Les moteurs de recherche ne référencent pas cette page") ?>">
+                                           title="<?php $languageFn->_e("Les moteurs de recherche ne référencent pas cette page") ?>">
                                         noindex
                                     </label>
                                     <input type="checkbox" id="nofollow">
                                     <label for="nofollow"
-                                           title="<?php $languageFc->_e("Empêche les liens d'être suivis par les robots et de transmettre de la popularité") ?>">
+                                           title="<?php $languageFn->_e("Empêche les liens d'être suivis par les robots et de transmettre de la popularité") ?>">
                                         nofollow
                                     </label>
                                 </div>
                             </div>
                             <input type="text" id="description" value="" maxlength="160" class="w100">
 
-                            <div class="small mtm"><?php $languageFc->_e("Formatted web address") ?></div>
+                            <div class="small mtm"><?php $languageFn->_e("Formatted web address") ?></div>
 
                             <div class="grid">
                                 <input type="text" id="permalink" value=""
-                                       placeholder="<?php $languageFc->_e("Permanent link: 'index' if homepage") ?>" maxlength="70"
+                                       placeholder="<?php $languageFn->_e("Permanent link: 'index' if homepage") ?>" maxlength="70"
                                        class="w50 mrm">
                                 <span id="ispage" class="none">
                                     <input type="checkbox" id="homepage">
                                     <label for="homepage" class="mrs">
-                                        <?php $languageFc->_e("Home page") ?>
+                                        <?php $languageFn->_e("Home page") ?>
                                     </label>
                                 </span>
 
                                 <label id="refresh-permalink">
                                     <i class="fa fa-fw fa-arrows-cw"></i>
-                                    <?php $languageFc->_e("Regenerate address") ?>
+                                    <?php $languageFn->_e("Regenerate address") ?>
                                 </label>
                             </div>
 
                             <div class="mod mtm">
                                 <div class="fl mrl">
-                                    <div class="small"><?php $languageFc->_e("Type of page") ?></div>
+                                    <div class="small"><?php $languageFn->_e("Type of page") ?></div>
                                     <div>
                                         <select id="type">
                                             <?php
-                                            foreach ($GLOBALS['add_content'] as $cle => $array) {
+                                            foreach ($globals->getAddContent() as $cle => $array) {
                                                 if (isset($_SESSION['auth']['add-' . $cle])) {
                                                     echo '<option value="' . $cle . '">' .
-                                                        ucfirst($languageFc->__($cle)) .
+                                                        ucfirst($languageFn->__($cle)) .
                                                         '</option>';
                                                 }
                                             } ?>
@@ -169,17 +169,17 @@ switch ($_GET['mode']) {
                                 </div>
 
                                 <div class="fl mrl">
-                                    <div class="small"><?php $languageFc->_e("Template") ?></div>
+                                    <div class="small"><?php $languageFn->_e("Template") ?></div>
                                     <div>
                                         <select id="tpl">
                                             <?php
-            $scandir = array_diff(scandir($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . "theme/" . $GLOBALS['theme'] . ($GLOBALS['theme'] ? "/" : "") . "tpl/"), ['..', '.']);
+            $scandir = array_diff(scandir($_SERVER['DOCUMENT_ROOT'] . $globals->getPath() . "theme/" . $globals->getTheme() . ($globals->getTheme() ? "/" : "") . "tpl/"), ['..', '.']);
             foreach ($scandir as $cle => $filename) {
                 $filename = pathinfo($filename, PATHINFO_FILENAME);
                 echo '<option value="' . $filename . '">';
                 //Si des noms sont spécifiés pour les templates
-                if (isset($GLOBALS['tpl_name'][$filename])) {
-                    echo ucfirst($GLOBALS['tpl_name'][$filename]);
+                if (isset($globals->getTplName()[$filename])) {
+                    echo ucfirst($globals->getTplName()[$filename]);
                 } else {
                     echo ucfirst($filename);
                 }
@@ -191,7 +191,7 @@ switch ($_GET['mode']) {
                                 </div>
 
                                 <div class="fl">
-                                    <div class="small"><?php $languageFc->_e("Creation date") ?></div>
+                                    <div class="small"><?php $languageFn->_e("Creation date") ?></div>
                                     <div>
                                         <input type="text" id="date-insert" class="w150p">
                                     </div>
@@ -199,7 +199,7 @@ switch ($_GET['mode']) {
                             </div>
 
                             <div class="small mtm">
-                                <?php $languageFc->_e("Image on social networks") ?>
+                                <?php $languageFn->_e("Image on social networks") ?>
                             </div>
                             <div class="">
                                 <span class="editable-media" id="og-image">
@@ -211,29 +211,29 @@ switch ($_GET['mode']) {
                 </div>
 
                 <div id="close" class="fr mrt bigger"
-                     title="<?php $languageFc->_e("Close the edit mode") ?>">
+                     title="<?php $languageFn->_e("Close the edit mode") ?>">
                     <i class="fa fa-fw fa-cancel vatt"></i>
                 </div>
 
-                <button id="save" class="fr mat small" title="<?php $languageFc->_e("Save") ?>">
+                <button id="save" class="fr mat small" title="<?php $languageFn->_e("Save") ?>">
                     <span class="noss">
-                        <?php $languageFc->_e("Save") ?>
+                        <?php $languageFn->_e("Save") ?>
                     </span>
                     <i class="fa fa-fw fa-floppy big"></i>
                 </button>
 
                 <button id="<?= (@$res['state'] == 'archive' ? 'del' : 'archive') ?>"
                         class="fr mat small o50 ho1 t5"
-                        title="<?php $languageFc->_e((@$res['state'] == 'archive' ? 'Delete' : 'Archive')) ?>">
+                        title="<?php $languageFn->_e((@$res['state'] == 'archive' ? 'Delete' : 'Archive')) ?>">
                     <span class="noss">
-                        <?php $languageFc->_e((@$res['state'] == 'archive' ? 'Delete' : 'Archive')) ?>
+                        <?php $languageFn->_e((@$res['state'] == 'archive' ? 'Delete' : 'Archive')) ?>
                     </span>
                     <i class="fa fa-fw fa-trash big"></i>
                 </button>
 
                 <div class="fr mat mrs switch o50 ho1 t5">
                     <input type="checkbox" id="state-content" class="none">
-                    <label for="state-content" title="<?php $languageFc->_e("Activation status") ?>">
+                    <label for="state-content" title="<?php $languageFn->_e("Activation status") ?>">
                         <i></i>
                     </label>
                 </div>
@@ -245,35 +245,35 @@ switch ($_GET['mode']) {
               $("#nonce").val('<?=$_SESSION['nonce']?>');
 
               // Warnings des poids des images pour suggérer des optimisations
-              <?=(isset($GLOBALS['img_green']) ? 'img_green = ' . $GLOBALS['img_green'] . ';' : '')?>
-              <?=(isset($GLOBALS['img_warning']) ? 'img_warning = ' . $GLOBALS['img_warning'] . ';' : '')?>
-              <?=(isset($GLOBALS['imgs_green']) ? 'imgs_green = ' . $GLOBALS['imgs_green'] . ';' : '')?>
-              <?=(isset($GLOBALS['imgs_warning']) ? 'imgs_warning = ' . $GLOBALS['imgs_warning'] . ';' : '')?>
-              <?=(isset($GLOBALS['imgs_num']) ? 'imgs_num = ' . $GLOBALS['imgs_num'] . ';' : '')?>
-              <?=(@$GLOBALS['towebp'] ? 'towebp = ' . $GLOBALS['towebp'] . ';' : '')?>
+              <?=(($globals->getImgGreen() !== "") ? 'img_green = ' . $globals->getImgGreen()  . ';' : '')?>
+              <?=(($globals->getImgWarning() !== "") ? 'img_warning = ' . $globals->getImgWarning()  . ';' : '')?>
+              <?=(($globals->getImgsGreen() !== "") ? 'imgs_green = ' . $globals->getImgsGreen()  . ';' : '')?>
+              <?=(($globals->getImgsWarning() !== "") ? 'imgs_warning = ' . $globals->getImgsWarning()  . ';' : '')?>
+              <?=(($globals->getImgsNum() !== "") ? 'imgs_num = ' . $globals->getImgsNum() . ';' : '')?>
+              <?=($globals->isToWebp()  ? 'towebp = ' . $globals->isToWebp()  . ';' : '')?>
 
               <?php
               // Outil dispo dans la toolbox pour les contenus
-              if ($GLOBALS['toolbox']) {
-                  foreach ($GLOBALS['toolbox'] as $cle => $val) {
+              if ($globals->getToolbox()) {
+                  foreach ($globals->getToolbox() as $cle => $val) {
                       echo 'toolbox_' . $val . ' = true;';
                   }
               }
 
               // Nombre de couleur custom
-              if (@$GLOBALS['nbcolor'] >= 0) {
-                  echo 'nbcolor = "' . @$GLOBALS['nbcolor'] . '";';
+              if ($globals->getNbColor() >= 0) {
+                  echo 'nbcolor = "' . $globals->getNbColor() . '";';
               }
             ?>
 
               // Chargement de Jquery UI
               $.ajax({
-                url: "<?=$GLOBALS['jquery_ui']?>",
+                url: "<?=$globals->getJqueryUi()?>",
                 dataType: 'script',
                 cache: true,
                 success: function () {
                   // Chargement de la css d'edition
-                  $("body").append("<link rel='stylesheet' href='<?=$GLOBALS['path']?>api/lucide.css'>");
+                  $("body").append("<link rel='stylesheet' href='<?=$globals->getPath() ?>api/lucide.css'>");
 
                   // Affichage de la barre d'admin
                   $("#admin-bar").show();
@@ -283,7 +283,7 @@ switch ($_GET['mode']) {
 
                   // Si Jquery UI bien charger on charge la lib qui rend le contenu éditable
                   var script = document.createElement('script');
-                  script.src = path + "api/lucide.edit.js?<?=$GLOBALS['cache']?>";
+                  script.src = path + "api/lucide.edit.js?<?=$globals->getCache()?>";
                   document.body.appendChild(script);
 
                 },
@@ -299,29 +299,30 @@ switch ($_GET['mode']) {
 
         unset($_SESSION['nonce']); // Pour éviter les interférences avec un autre nonce de session
 
-        $connexion->login('medium');
+        $connexionFn->login('medium');
 
         // @todo metre en none, chaché les options avancé (permalien, regen, home)
 
         // Dialog : titre, template, langue
         ?>
-        <link rel="stylesheet" href="<?= $GLOBALS['jquery_ui_css'] ?>">
-        <link rel="stylesheet" href="<?= $GLOBALS['path'] ?>api/lucide.css?0.1">
-        <div class="dialog-add" title="<?php $languageFc->_e("Add content") ?>">
-            <input type="hidden" id="nonce" value="<?= $connexion->nonce("nonce"); ?>">
+        <link rel="stylesheet" href="<?= $globals->getJqueryUiCss() ?>">
+        <link rel="stylesheet" href="<?= $globals->getPath()  ?>api/lucide.css?0.1">
+        <div class="dialog-add" title="<?php $languageFn->_e("Add content") ?>">
+            <input type="hidden" id="nonce" value="<?= $connexionFn->nonce("nonce"); ?>">
             <ul class="smaller">
                 <?php
-                foreach ($GLOBALS['add_content'] as $cle => $array) {
+                foreach ($globals->getAddContent() as $cle => $array) {
                     if (isset($_SESSION['auth']['add-' . $cle])) {
-                        echo '<li data-filter="' . $cle . '" data-tpl="' . $array['tpl'] . '"><a href="#add-' . $cle . '"><i class="fa ' . $array['fa'] . '"></i> <span>' . $languageFc->__("Add " . $cle) . '</span></a></li>';
+                        echo '<li data-filter="' . $cle . '" data-tpl="' . $array['tpl'] . '"><a href="#add-' . $cle . '"><i class="fa ' . $array['fa'] . '"></i> <span>' . $languageFn->__("Add " . $cle) . '</span></a></li>';
                     }
                 }
         ?>
             </ul>
             <div class="none">
                 <?php
-            reset($GLOBALS['add_content']);
-        foreach ($GLOBALS['add_content'] as $cle => $array) {
+                $addContent = $globals->getAddContent();
+        reset($addContent);
+        foreach ($addContent as $cle => $array) {
             if (isset($_SESSION['auth']['add-' . $cle])) {
                 echo '<div id="add-' . $cle . '"></div>';
             }
@@ -331,12 +332,12 @@ switch ($_GET['mode']) {
             <div>
                 <div class="mas">
                     <input type="text" id="title" 
-                           placeholder="<?php $languageFc->_e("Title") ?>"
+                           placeholder="<?php $languageFn->_e("Title") ?>"
                            maxlength="70" class="w60 bold">
                     <select id="tpl" required class="w30">
-                        <option value=""><?php $languageFc->_e("Select template") ?></option>
+                        <option value=""><?php $languageFn->_e("Select template") ?></option>
                         <?php
-                $scandir = array_diff(scandir($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . "theme/" . $GLOBALS['theme'] . ($GLOBALS['theme'] ? "/" : "") . "tpl/"), ['..', '.']);
+        $scandir = array_diff(scandir($_SERVER['DOCUMENT_ROOT'] . $globals->getPath()  . "theme/" . $globals->getTheme() . ($globals->getTheme() ? "/" : "") . "tpl/"), ['..', '.']);
         foreach ($scandir as $cle => $filename) {
             $pathinfo = pathinfo($filename);
                 
@@ -344,8 +345,8 @@ switch ($_GET['mode']) {
                 echo '<option value="' . $pathinfo['filename'] . '">';
                 
                 //Si des noms sont spécifiés pour les templates
-                if (isset($GLOBALS['tpl_name'][$pathinfo['filename']])) {
-                    echo ucfirst($GLOBALS['tpl_name'][$pathinfo['filename']]);
+                if (isset($globals->getTplName()[$pathinfo['filename']])) {
+                    echo ucfirst($globals->getTplName()[$pathinfo['filename']]);
                 } else {
                     echo ucfirst($pathinfo['filename']);
                 }
@@ -360,13 +361,13 @@ switch ($_GET['mode']) {
 
                 <div class="mas mtm">
                     <input type="text" id="permalink" 
-                           placeholder="<?php $languageFc->_e("Permanent link") ?>"
+                           placeholder="<?php $languageFn->_e("Permanent link") ?>"
                            maxlength="70"
                            class="w50 mrm">
-                    <!-- <label for="homepage" class="mrs mtn none"><input type="checkbox" id="homepage"> <?php $languageFc->_e("Home page") ?></label> -->
+                    <!-- <label for="homepage" class="mrs mtn none"><input type="checkbox" id="homepage"> <?php $languageFn->_e("Home page") ?></label> -->
                     <label id="refresh-permalink" class="mtn">
                         <i class="fa fa-fw fa-arrows-cw"></i>
-                        <?php $languageFc->_e("Regenerate address") ?>
+                        <?php $languageFn->_e("Regenerate address") ?>
                     </label>
                 </div>
             </div>
@@ -419,7 +420,7 @@ switch ($_GET['mode']) {
 
                 // Chargement de Jquery UI
                 $.ajax({
-                  url: "<?=$GLOBALS['jquery_ui']?>",
+                  url: "<?=$globals->getJqueryUi()?>",
                   dataType: 'script',
                   cache: true,
                   async: true,
@@ -491,21 +492,21 @@ switch ($_GET['mode']) {
     case "insert": // Crée une nouvelle page
         include_once("db.php"); // Connexion à la db
 
-        $type = $navigation->encode($_POST['type']);
+        $type = $navigationFn->encode($_POST['type']);
 
-        $connexion->login('high', 'add-' . $type); // Vérifie que l'on a le droit d'ajouter une page
+        $connexionFn->login('high', 'add-' . $type); // Vérifie que l'on a le droit d'ajouter une page
 
         // @todo verifier que le permalink est bien enregister si il est diff du titre
 
-        $url = ($navigation->encode($_POST['permalink']) ? $navigation->encode($_POST['permalink']) : $navigation->encode($_POST['title']));
+        $url = ($navigationFn->encode($_POST['permalink']) ? $navigationFn->encode($_POST['permalink']) : $navigationFn->encode($_POST['title']));
 
         if ($url) {
             // Ajoute la page
-            $sql = "INSERT " . $globals->table_content . " SET ";
+            $sql = "INSERT " . $globals->getTableContent() . " SET ";
             $sql .= "title = '" . addslashes(strip_tags(trim($_POST['title']))) . "', ";
             $sql .= "tpl = '" . addslashes($_POST['tpl']) . "', ";
             $sql .= "url = '" . $url . "', ";
-            $sql .= "lang = '" . $globals->lang . "', ";
+            $sql .= "lang = '" . $globals->getLang() . "', ";
             $sql .= "type = '" . $type . "', ";
             $sql .= "user_insert = '" . (int)$_SESSION['uid'] . "', ";
             $sql .= "date_insert = NOW() ";
@@ -516,19 +517,19 @@ switch ($_GET['mode']) {
                 echo htmlspecialchars($sql) . "\n<script>error(\"" . htmlspecialchars($dataBase->getConnect()->error) . "\");</script>";
             } else { // Sauvegarde réussit
                 // Pose un cookie pour demander l'ouverture de l'admin automatiquement au chargement
-                setcookie("autoload_edit", "true", time() + 60 * 60, $GLOBALS['path'], $GLOBALS['domain']);
+                setcookie("autoload_edit", "true", time() + 60 * 60, $globals->getPath(), $globals->getDomain());
 
                 ?>
                 <script>
                   $(function () {
                     // Redirection vers la page crée
-                    document.location.href = "<?=$navigation->make_url($url, ["domaine" => true]);?>";
+                    document.location.href = "<?=$navigationFn->make_url($url, ["domaine" => true]);?>";
                   });
                 </script>
                 <?php
             }
         } else {
-            echo "<script>error(\"" . $languageFc->__("No permanent link for content") . "\");</script>";
+            echo "<script>error(\"" . $languageFn->__("No permanent link for content") . "\");</script>";
         }
 
         break;
@@ -539,57 +540,57 @@ switch ($_GET['mode']) {
 
         //highlight_string(print_r($_POST, true)); exit;
 
-        $type = ($_POST['type'] ? $navigation->encode($_POST['type']) : "page"); // Type de contenu
+        $type = ($_POST['type'] ? $navigationFn->encode($_POST['type']) : "page"); // Type de contenu
 
-        $connexion->login('high', 'edit-' . $type); // Vérifie que l'on peut éditer une page
+        $connexionFn->login('high', 'edit-' . $type); // Vérifie que l'on peut éditer une page
 
         // PREPARATION POUR LE CONTENU ET NAVIGATION
         // On récupère les données de la page pour comparaison
-        $sel = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_content . " WHERE url='" . $navigation->get_url($_POST['url']) . "' AND lang='" .  $globals->lang . "' LIMIT 1");
+        $sel = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableContent() . " WHERE url='" . $navigationFn->get_url($_POST['url']) . "' AND lang='" .  $globals->getLang() . "' LIMIT 1");
         $res = $sel->fetch_assoc();
 
         // Si le titre à changer et que l'on n'est pas sur le home, on change l'URL de la page
-        if ($res['url'] != $navigation->encode($_POST['permalink']) or ($navigation->encode($_POST['title']) and !$navigation->encode($_POST['permalink']))) {
-            if (!$navigation->encode($_POST['permalink']) and $navigation->encode($_POST['title'])) {
-                $change_url = $navigation->encode($_POST['title']);
-            } elseif (!$navigation->encode($_POST['permalink']) and !$navigation->encode($_POST['title'])) {
+        if ($res['url'] != $navigationFn->encode($_POST['permalink']) or ($navigationFn->encode($_POST['title']) and !$navigationFn->encode($_POST['permalink']))) {
+            if (!$navigationFn->encode($_POST['permalink']) and $navigationFn->encode($_POST['title'])) {
+                $change_url = $navigationFn->encode($_POST['title']);
+            } elseif (!$navigationFn->encode($_POST['permalink']) and !$navigationFn->encode($_POST['title'])) {
                 $change_url = $type . "-" . $res['id'];
             } else {
-                $change_url = $navigation->encode($_POST['permalink']);
+                $change_url = $navigationFn->encode($_POST['permalink']);
             }
         }
 
 
         // Check si la page a bien une url par sécuritée
-        if ((isset($change_url) and $change_url == "") or $navigation->get_url($_POST['url']) == "") {
-            exit("<script>error(\"" . $languageFc->__("No permanent link for content") . "\");</script>");
+        if ((isset($change_url) and $change_url == "") or $navigationFn->get_url($_POST['url']) == "") {
+            exit("<script>error(\"" . $languageFn->__("No permanent link for content") . "\");</script>");
         }
 
 
         // Verification de la config de https
-        if (@$_SERVER['REQUEST_SCHEME'] == 'https' and $GLOBALS['scheme'] != 'https://') {
+        if (@$_SERVER['REQUEST_SCHEME'] == 'https' and $globals->getScheme() != 'https://') {
             // Message d'erreur pour inviter à éditer config.php
-            echo "<script>error(\"" . $languageFc->__("Vous naviguer en https mais ça n'est pas spécifié dans config.php (scheme = https://)") . "\");</script>";
+            echo "<script>error(\"" . $languageFn->__("Vous naviguer en https mais ça n'est pas spécifié dans config.php (scheme = https://)") . "\");</script>";
 
             // On change la variable qui permet de supprimer les chemins pour qu'elle soit appropriée
-            $GLOBALS['home'] = str_replace('http://', 'https://', $GLOBALS['home']);
+            $globals->setHome(str_replace('http://', 'https://', $globals->getHome()));
         }
 
 
         // MENU DE NAVIGATION
         if (isset($_POST['nav'])) {
             // On regarde s'il y a déjà des données
-            $sel_nav = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_meta . " WHERE type='nav' AND cle='" .  $globals->lang . "' LIMIT 1");
+            $sel_nav = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableMeta() . " WHERE type='nav' AND cle='" .  $globals->getLang() . "' LIMIT 1");
             $res_nav = $sel_nav->fetch_assoc();
 
             // On remplace le chemin absolut du site par la clé : home (utilise pour éviter les bug lors des mises en lignes)
             array_walk(
                 $_POST['nav'],
-                function (&$key) {
-                    $key['href'] = str_replace($GLOBALS['home'], "", $key['href']); // Supprime les url avec le domaine pour faciliter le transport du site
+                function (&$key) use ($globals) {
+                    $key['href'] = str_replace($globals->getHome(), "", $key['href']); // Supprime les url avec le domaine pour faciliter le transport du site
 
                     // Si vide ou raçine path on est sur la home
-                    if ($key['href'] == "" or $key['href'] == $GLOBALS['path']) {
+                    if ($key['href'] == "" or $key['href'] == $globals->getPath()) {
                         $key['href'] = "index";
                     }
                 }
@@ -617,13 +618,13 @@ switch ($_GET['mode']) {
             } else {
                 $sql = "INSERT INTO";
             }
-            $sql .= " " . $globals->table_meta . " SET ";
+            $sql .= " " . $globals->getTableMeta() . " SET ";
             $sql .= "id = '0', ";
             $sql .= "type = 'nav', ";
-            $sql .= "cle = '" .  $globals->lang . "', ";
+            $sql .= "cle = '" .  $globals->getLang() . "', ";
             $sql .= "val = '" . addslashes($json_nav) . "' ";
             if ($res_nav['type']) {
-                $sql .= "WHERE type='nav' AND cle='" .  $globals->lang . "' LIMIT 1";
+                $sql .= "WHERE type='nav' AND cle='" .  $globals->getLang() . "' LIMIT 1";
             }
 
             $dataBase->getConnect()->query($sql);
@@ -638,11 +639,11 @@ switch ($_GET['mode']) {
         // HEADER
         if (isset($_POST['header'])) {
             // On regarde s'il y a déjà des données
-            $sel_header = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_meta . " WHERE type='header' AND cle='" .  $globals->lang . "' LIMIT 1");
+            $sel_header = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableMeta() . " WHERE type='header' AND cle='" .  $globals->getLang() . "' LIMIT 1");
             $res_header = $sel_header->fetch_assoc();
 
             // Supprime les url avec le domaine pour faciliter le transport du site
-            $_POST['header'] = str_replace($GLOBALS['home'], @(string)$GLOBALS['replace_path'], $_POST['header']);
+            $_POST['header'] = str_replace($globals->getHome(), $globals->getReplacePath(), $_POST['header']);
 
             // On encode les données
             $json_header = json_encode($_POST['header'], JSON_UNESCAPED_UNICODE);
@@ -653,13 +654,13 @@ switch ($_GET['mode']) {
             } else {
                 $sql = "INSERT INTO";
             }
-            $sql .= " " . $globals->table_meta . " SET ";
+            $sql .= " " . $globals->getTableMeta() . " SET ";
             $sql .= "id = '0', ";
             $sql .= "type = 'header', ";
-            $sql .= "cle = '" .  $globals->lang . "', ";
+            $sql .= "cle = '" .  $globals->getLang() . "', ";
             $sql .= "val = '" . addslashes($json_header) . "' ";
             if ($res_header['type']) {
-                $sql .= "WHERE type='header' AND cle='" .  $globals->lang . "' LIMIT 1";
+                $sql .= "WHERE type='header' AND cle='" .  $globals->getLang() . "' LIMIT 1";
             }
 
             $dataBase->getConnect()->query($sql);
@@ -674,11 +675,11 @@ switch ($_GET['mode']) {
         // FOOTER
         if (isset($_POST['footer'])) {
             // On regarde s'il y a déjà des données
-            $sel_footer = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_meta . " WHERE type='footer' AND cle='" .  $globals->lang . "' LIMIT 1");
+            $sel_footer = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableMeta() . " WHERE type='footer' AND cle='" .  $globals->getLang() . "' LIMIT 1");
             $res_footer = $sel_footer->fetch_assoc();
 
             // Supprime les url avec le domaine pour faciliter le transport du site
-            $_POST['footer'] = str_replace($GLOBALS['home'], @(string)$GLOBALS['replace_path'], $_POST['footer']);
+            $_POST['footer'] = str_replace($globals->getHome(), $globals->getReplacePath(), $_POST['footer']);
 
             // On  encode les données
             $json_footer = json_encode($_POST['footer'], JSON_UNESCAPED_UNICODE);
@@ -689,13 +690,13 @@ switch ($_GET['mode']) {
             } else {
                 $sql = "INSERT INTO";
             }
-            $sql .= " " . $globals->table_meta . " SET ";
+            $sql .= " " . $globals->getTableMeta() . " SET ";
             $sql .= "id = '0', ";
             $sql .= "type = 'footer', ";
-            $sql .= "cle = '" .  $globals->lang . "', ";
+            $sql .= "cle = '" .  $globals->getLang() . "', ";
             $sql .= "val = '" . addslashes($json_footer) . "' ";
             if ($res_footer['type']) {
-                $sql .= "WHERE type='footer' AND cle='" .  $globals->lang . "' LIMIT 1";
+                $sql .= "WHERE type='footer' AND cle='" .  $globals->getLang() . "' LIMIT 1";
             }
 
             $dataBase->getConnect()->query($sql);
@@ -708,29 +709,29 @@ switch ($_GET['mode']) {
 
 
         // Clean les tags de la fiche dans la bdd
-        $dataBase->getConnect()->query("DELETE FROM " . $globals->table_tag . " WHERE id='" . (int)$_POST['id'] . "'");
+        $dataBase->getConnect()->query("DELETE FROM " . $globals->getTableTag() . " WHERE id='" . (int)$_POST['id'] . "'");
 
         // TAG ajout au tag
         //$tag_array = null;
         if (!isset($_POST['tag-info']) and isset($_POST['tag'])) {
             foreach ($_POST['tag'] as $zone => $tags) {
-                $zone = $navigation->encode($zone);
+                $zone = $navigationFn->encode($zone);
 
                 // split les tags en fonction du séparateur
                 $tags = explode((@$_POST['tag-separator'][$zone] ? trim($_POST['tag-separator'][$zone]) : ","), trim($tags));
 
                 $i = 1;
                 foreach ($tags as $cle => $val) {
-                    if (isset($val) and $navigation->trimer($val) != "") {
-                        $dataBase->getConnect()->query("INSERT INTO " . $globals->table_tag .
+                    if (isset($val) and $navigationFn->trimer($val) != "") {
+                        $dataBase->getConnect()->query("INSERT INTO " . $globals->getTableTag() .
                             " SET id='" . (int)$_POST['id'] .
                             "', zone='" . $zone .
-                            "', lang='" .  $globals->lang .
-                            "', encode='" . $navigation->encode($val) .
-                            "', name='" . addslashes($navigation->trimer($val)) .
+                            "', lang='" .  $globals->getLang() .
+                            "', encode='" . $navigationFn->encode($val) .
+                            "', name='" . addslashes($navigationFn->trimer($val)) .
                             "', ordre='" . (isset($_POST['tag-ordre']) ? (int)$_POST['tag-ordre'] : $i) . "'");
 
-                        //$tag_array[$zone][] = $navigation->trimer($val); // Liste les tags pour le contenu
+                        //$tag_array[$zone][] = $navigationFn->trimer($val); // Liste les tags pour le contenu
 
                         $i++;
                     }
@@ -750,24 +751,24 @@ switch ($_GET['mode']) {
         if (isset($_POST['tag-info']) and isset($_POST['tag'])) {
             $tag = html_entity_decode($_POST['tag']); // Pour un titre/url sans html encodé
 
-            $tag_url = $navigation->encode(key($GLOBALS['filter'])); // Permalink du tag
+            $tag_url = $navigationFn->encode(key($globals->getFilter())); // Permalink du tag
 
             // Supprime les infos du tag
-            $dataBase->getConnect()->query("DELETE FROM " . $globals->table_meta . " WHERE type='tag-info' AND (cle='" . $navigation->encode($tag) . "' OR cle='" . $tag_url . "')");
+            $dataBase->getConnect()->query("DELETE FROM " . $globals->getTableMeta() . " WHERE type='tag-info' AND (cle='" . $navigationFn->encode($tag) . "' OR cle='" . $tag_url . "')");
 
             // Supprime les url avec le domaine pour faciliter le transport du site
-            $_POST['tag-info'] = str_replace($GLOBALS['home'], @$GLOBALS['replace_path'], $_POST['tag-info']);
+            $_POST['tag-info'] = str_replace($globals->getHome(), $globals->getReplacePath(), $_POST['tag-info']);
 
             // Insertion des infos du tag
             $tag_info = json_encode($_POST['tag-info'], JSON_UNESCAPED_UNICODE);
-            $dataBase->getConnect()->query("INSERT INTO " . $globals->table_meta . " SET type='tag-info', cle='" . $navigation->encode($tag) . "', val='" . addslashes($tag_info) . "'");
+            $dataBase->getConnect()->query("INSERT INTO " . $globals->getTableMeta() . " SET type='tag-info', cle='" . $navigationFn->encode($tag) . "', val='" . addslashes($tag_info) . "'");
             if ($dataBase->getConnect()->error) {
                 echo "<script>error(\"" . htmlspecialchars($dataBase->getConnect()->error) . "\");</script>";
             }
 
 
             // Update les tags des contenus
-            $dataBase->getConnect()->query("UPDATE " . $globals->table_tag . " SET encode='" . $navigation->encode($tag) . "', name='" . addslashes($tag) . "' WHERE zone='" . $navigation->encode($_POST['permalink']) . "' AND lang='" .  $globals->lang . "' AND encode='" . $tag_url . "'");
+            $dataBase->getConnect()->query("UPDATE " . $globals->getTableTag() . " SET encode='" . $navigationFn->encode($tag) . "', name='" . addslashes($tag) . "' WHERE zone='" . $navigationFn->encode($_POST['permalink']) . "' AND lang='" .  $globals->getLang() . "' AND encode='" . $tag_url . "'");
             if ($dataBase->getConnect()->error) {
                 echo "<script>error(\"" . htmlspecialchars($dataBase->getConnect()->error) . "\");</script>";
             }
@@ -780,24 +781,24 @@ switch ($_GET['mode']) {
                 $global_tags = $_POST['global']['tags'];
             } else {
                 // Sinon on regarde s'il y a un menu global tags
-                $sel_tags = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_meta . " WHERE type='global' AND cle='tags' LIMIT 1");
+                $sel_tags = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableMeta() . " WHERE type='global' AND cle='tags' LIMIT 1");
                 $res_tags = $sel_tags->fetch_assoc();
 
                 $global_tags = $res_tags['val'];
             }
 
-            if (@$global_tags and @$tag_url and $navigation->encode(@$tag)) {
+            if (@$global_tags and @$tag_url and $navigationFn->encode(@$tag)) {
                 // Changement Url
-                $global_tags = str_replace('/' . $tag_url . '"', '/' . $navigation->encode($tag) . '"', $global_tags);
+                $global_tags = str_replace('/' . $tag_url . '"', '/' . $navigationFn->encode($tag) . '"', $global_tags);
 
                 // Changement Texte du lien
-                $global_tags = preg_replace('/(\/' . $navigation->encode($tag) . '".*?>).*?(<\/a>)/', '$1' . $_POST['tag'] . '$2', $global_tags);
+                $global_tags = preg_replace('/(\/' . $navigationFn->encode($tag) . '".*?>).*?(<\/a>)/', '$1' . $_POST['tag'] . '$2', $global_tags);
 
                 if ($_POST['global']['tags']) {
                     $_POST['global']['tags'] = $global_tags;
                 } elseif ($res_tags['val']) {
                     // Update
-                    $dataBase->getConnect()->query("UPDATE " . $globals->table_meta . " SET val='" . addslashes($global_tags) . "' WHERE type='global' AND cle='tags'");
+                    $dataBase->getConnect()->query("UPDATE " . $globals->getTableMeta() . " SET val='" . addslashes($global_tags) . "' WHERE type='global' AND cle='tags'");
                     if ($dataBase->getConnect()->error) {
                         echo "<script>error(\"" . htmlspecialchars($dataBase->getConnect()->error) . "\");</script>";
                     }
@@ -805,8 +806,8 @@ switch ($_GET['mode']) {
             }
 
             // Si changement de l'url on la change dans le navigateur
-            if ($navigation->encode($tag) != $tag_url) {
-                $change_url = $navigation->make_url($navigation->get_url($_POST['url']), [$tag, 'absolu' => true]);
+            if ($navigationFn->encode($tag) != $tag_url) {
+                $change_url = $navigationFn->make_url($navigationFn->get_url($_POST['url']), [$tag, 'absolu' => true]);
             }
         }
 
@@ -818,17 +819,17 @@ switch ($_GET['mode']) {
                 // Ajoute la meta si elle contient une variable
                 if (isset($val) and $val != "") {
                     // On regarde s'il y a déjà des données
-                    $sel_meta = $dataBase->getConnect()->query("SELECT id FROM " . $globals->table_meta . " WHERE id='" . (int)$_POST['id'] . "' AND type='" . $navigation->encode($cle) . "' LIMIT 1");
+                    $sel_meta = $dataBase->getConnect()->query("SELECT id FROM " . $globals->getTableMeta() . " WHERE id='" . (int)$_POST['id'] . "' AND type='" . $navigationFn->encode($cle) . "' LIMIT 1");
                     $res_meta = $sel_meta->fetch_assoc();
 
                     if (@$res_meta['id']) {
-                        $dataBase->getConnect()->query("UPDATE " . $globals->table_meta . " SET id='" . (int)$_POST['id'] . "', type='" . $navigation->encode($cle) . "', cle='" . addslashes(trim($val)) . "' WHERE id='" . (int)$_POST['id'] . "' AND type='" . $navigation->encode($cle) . "' LIMIT 1");
+                        $dataBase->getConnect()->query("UPDATE " . $globals->getTableMeta() . " SET id='" . (int)$_POST['id'] . "', type='" . $navigationFn->encode($cle) . "', cle='" . addslashes(trim($val)) . "' WHERE id='" . (int)$_POST['id'] . "' AND type='" . $navigationFn->encode($cle) . "' LIMIT 1");
                     } else {
-                        $dataBase->getConnect()->query("INSERT INTO " . $globals->table_meta . " SET id='" . (int)$_POST['id'] . "', type='" . $navigation->encode($cle) . "', cle='" . addslashes(trim($val)) . "'");
+                        $dataBase->getConnect()->query("INSERT INTO " . $globals->getTableMeta() . " SET id='" . (int)$_POST['id'] . "', type='" . $navigationFn->encode($cle) . "', cle='" . addslashes(trim($val)) . "'");
                     }
                 } // Supprime la meta
                 else {
-                    $dataBase->getConnect()->query("DELETE FROM " . $globals->table_meta . " WHERE id='" . (int)$_POST['id'] . "' AND type='" . $navigation->encode($cle) . "'");
+                    $dataBase->getConnect()->query("DELETE FROM " . $globals->getTableMeta() . " WHERE id='" . (int)$_POST['id'] . "' AND type='" . $navigationFn->encode($cle) . "'");
                 }
             }
 
@@ -842,12 +843,12 @@ switch ($_GET['mode']) {
         // Ajout aux meta de contenu en commun à plusieur page
         if (isset($_POST['global']) and $_POST['global'] != "") {
             foreach ($_POST['global'] as $cle => $val) {
-                $dataBase->getConnect()->query("DELETE FROM " . $globals->table_meta . " WHERE type='global' AND cle='" . $navigation->encode($cle) . "'");
+                $dataBase->getConnect()->query("DELETE FROM " . $globals->getTableMeta() . " WHERE type='global' AND cle='" . $navigationFn->encode($cle) . "'");
 
                 if (isset($val) and $val != "") {
-                    $val = str_replace($GLOBALS['home'], '', $val); // Supprime le domaine des urls
+                    $val = str_replace($globals->getHome(), '', $val); // Supprime le domaine des urls
 
-                    $dataBase->getConnect()->query("INSERT INTO " . $globals->table_meta . " SET type='global', cle='" . $navigation->encode($cle) . "', val='" . addslashes(trim($val)) . "'");
+                    $dataBase->getConnect()->query("INSERT INTO " . $globals->getTableMeta() . " SET type='global', cle='" . $navigationFn->encode($cle) . "', val='" . addslashes(trim($val)) . "'");
                 }
             }
 
@@ -865,13 +866,13 @@ switch ($_GET['mode']) {
                 // Version tableau multidimensionnel
                 array_walk_recursive(
                     $_POST['content'],
-                    function (&$value) {
-                        $value = str_replace($GLOBALS['home'], @(string)$GLOBALS['replace_path'], $value);
+                    function (&$value) use ($globals) {
+                        $value = str_replace($globals->getHome(), $globals->getReplacePath(), $value);
                     }
                 );
             }
             // Version tableau simple
-            //$_POST['content'] = str_replace($GLOBALS['home'], @(string)$GLOBALS['replace_path'], $_POST['content']);
+            //$_POST['content'] = str_replace($globals->getHome(), $globals->getReplacePath(), $_POST['content']);
             else {
                 $_POST['content'] = '';
             }
@@ -886,7 +887,7 @@ switch ($_GET['mode']) {
 
 
             // Sauvegarde les contenus
-            $sql = "UPDATE " . $globals->table_content . " SET ";
+            $sql = "UPDATE " . $globals->getTableContent() . " SET ";
 
             //@todo ajouter un check si un content n'existe pas déjà avec ce nom. si existe on incremente (check en boucle)
             if (isset($change_url)) {
@@ -903,7 +904,7 @@ switch ($_GET['mode']) {
             $sql .= "user_update = '" . (int)$_SESSION['uid'] . "', ";
             $sql .= "date_update = NOW(), ";
             $sql .= "date_insert = '" . addslashes(date('Y-m-d H:i:s', strtotime($_POST['date-insert']))) . "' ";
-            $sql .= "WHERE url = '" . $navigation->get_url($_POST['url']) . "' AND lang = '" .  $globals->lang . "'";
+            $sql .= "WHERE url = '" . $navigationFn->get_url($_POST['url']) . "' AND lang = '" .  $globals->getLang() . "'";
             $dataBase->getConnect()->query($sql);
 
             //echo $sql;
@@ -921,28 +922,28 @@ switch ($_GET['mode']) {
 
                   <?php if(isset($change_url)) {?>
                 // Change l'url de la page
-                window.history.replaceState({}, document.title, "<?=$navigation->make_url($change_url);?>"); //history.state
+                window.history.replaceState({}, document.title, "<?=$navigationFn->make_url($change_url);?>"); //history.state
                   <?php }?>
 
 
 
-                  <?php if(@$GLOBALS['static']) { // GÉNÉRATION DE LA PAGE EN STATIQUE .HTML
+                  <?php if($globals->isStatic()) { // GÉNÉRATION DE LA PAGE EN STATIQUE .HTML
                       //@todo gerer le cas ou la page n'est pas activé
                       //@todo metre la généaration dans un switch ajax.admin.php et faire une boucle en js sur la génération des url demander en cascade pour voir une progression de la génération des pages (progressbar)
                       //@todo afficher dans un after le nom de la page en cours de génération en dessou de la progressbar
 
-                      $dir = (@$GLOBALS['static_dir'] ? $GLOBALS['static_dir'] . '/' : '');
+                      $dir = ($globals->getStaticDir() ? $globals->getStaticDir() . '/' : '');
 
                       // Supprime le .html statique
                       $url = (isset($change_url) ? $change_url : $res['url']);
 
-                      $file = $_SERVER["DOCUMENT_ROOT"] . $GLOBALS['path'] . $dir . $res['url'] . '.html';
+                      $file = $_SERVER["DOCUMENT_ROOT"] . $globals->getPath()  . $dir . $res['url'] . '.html';
 
                       @unlink($file);
 
                       // Génération en php
                       // Récupération du contenu de la page
-                      $html = $connexion->curl($navigation->make_url($url, ['domaine' => true]));
+                      $html = $connexionFn->curl($navigationFn->make_url($url, ['domaine' => true]));
 
                       // Encodage du contenu html
                       $html = mb_convert_encoding($html, 'UTF-8', 'auto');
@@ -963,22 +964,22 @@ switch ($_GET['mode']) {
 
 
 
-                  <?php if(@$GLOBALS['img_check']) { // Affichage des stats sur les images pour optimisation
+                  <?php if($globals->isImagCheck()) { // Affichage des stats sur les images pour optimisation
                       ?>
                 img_check();
                   <?php }?>
 
 
-                  <?php if(@$GLOBALS['access_check']) { // Affichage des stats sur l'accessibilité
+                  <?php if($globals->isAccessCheck()) { // Affichage des stats sur l'accessibilité
                       ?>
                 access_check();
                   <?php }?>
 
 
 
-                  <?php if(@$GLOBALS['ecoindex']) { // Affiche le ecoindex
+                  <?php if($globals->isEcoIndex()) { // Affiche le ecoindex
                       // Cookie pour dire de lancer ecoindex dans l'iframe de la page en mode preview
-                      setcookie("iframe_ecoindex", "true", time() + 60 * 60, $GLOBALS['path'], $GLOBALS['domain']);
+                      setcookie("iframe_ecoindex", "true", time() + 60 * 60, $globals->getPath(), $globals->getDomain());
 
                       // Url de la page a auditer
                       $url = (isset($change_url) ? $change_url : $res['url']);
@@ -987,7 +988,7 @@ switch ($_GET['mode']) {
                 $("#ecoindex span").html("<i class='fa fa-cog fa-spin'></i>");
 
                 // Inject la page dans une iframe pour l'auditer
-                $("body").append('<iframe id="iframe_ecoindex" src="<?=$navigation->make_url($url, ['domaine' => true])?>" frameborder="0" class="hidden" width="100%" height="850"></iframe>');
+                $("body").append('<iframe id="iframe_ecoindex" src="<?=$navigationFn->make_url($url, ['domaine' => true])?>" frameborder="0" class="hidden" width="100%" height="850"></iframe>');
 
                   <?php }?>
 
@@ -1007,12 +1008,12 @@ switch ($_GET['mode']) {
 
         //highlight_string(print_r($_POST, true)); exit;
 
-        $type = ($_POST['type'] ? $navigation->encode($_POST['type']) : "page"); // Type de contenu
+        $type = ($_POST['type'] ? $navigationFn->encode($_POST['type']) : "page"); // Type de contenu
 
-        $connexion->login('high', 'edit-' . $type); // Vérifie que l'on a le droit d'éditer le type de contenu
+        $connexionFn->login('high', 'edit-' . $type); // Vérifie que l'on a le droit d'éditer le type de contenu
 
         // ARCHIVE LA PAGE
-        $dataBase->getConnect()->query("UPDATE " . $globals->table_content . " SET state = 'archive' WHERE url = '" . $navigation->get_url($_POST['url']) . "' AND lang = '" .  $globals->lang . "'");
+        $dataBase->getConnect()->query("UPDATE " . $globals->getTableContent() . " SET state = 'archive' WHERE url = '" . $navigationFn->get_url($_POST['url']) . "' AND lang = '" .  $globals->getLang() . "'");
 
         if ($dataBase->getConnect()->error) {
             echo $dataBase->getConnect()->error . "\nSQL:\n" . $sql;
@@ -1022,11 +1023,11 @@ switch ($_GET['mode']) {
             <script>
               $(function () {
                 // Message page archivé
-                light("<?php $languageFc->_e("Page archived, redirecting")?> <i class='fa fa-cog fa-spin mlt'></i>");
+                light("<?php $languageFn->_e("Page archived, redirecting")?> <i class='fa fa-cog fa-spin mlt'></i>");
 
                 // Redirection vers la page d'accueil
                 setTimeout(function () {
-                  document.location.href = "<?=$GLOBALS['home'];?>";
+                  document.location.href = "<?=$globals->getHome();?>";
                 }, 2000);
               });
             </script>
@@ -1042,28 +1043,28 @@ switch ($_GET['mode']) {
 
         //highlight_string(print_r($_POST, true)); exit;
 
-        $type = ($_POST['type'] ? $navigation->encode($_POST['type']) : "page"); // Type de contenu
+        $type = ($_POST['type'] ? $navigationFn->encode($_POST['type']) : "page"); // Type de contenu
 
-        $connexion->login('high', 'edit-' . $type); // Vérifie que l'on a le droit d'éditer le type de contenu
+        $connexionFn->login('high', 'edit-' . $type); // Vérifie que l'on a le droit d'éditer le type de contenu
 
 
         // SUPPRIME LA PAGE
-        $dataBase->getConnect()->query("DELETE FROM " . $globals->table_content . " WHERE url = '" . $navigation->get_url($_POST['url']) . "' AND lang = '" .  $globals->lang . "'");
+        $dataBase->getConnect()->query("DELETE FROM " . $globals->getTableContent() . " WHERE url = '" . $navigationFn->get_url($_POST['url']) . "' AND lang = '" .  $globals->getLang() . "'");
 
         // SUPPRIME LES TAGS LIÉES
-        $dataBase->getConnect()->query("DELETE FROM " . $globals->table_tag . " WHERE id='" . (int)$_POST['id'] . "'");
+        $dataBase->getConnect()->query("DELETE FROM " . $globals->getTableTag() . " WHERE id='" . (int)$_POST['id'] . "'");
 
 
         if (isset($_POST['medias'])) {
             // Supprime les url avec le domaine pour la suppression locale
-            $_POST['medias'] = str_replace($GLOBALS['home'], "", $_POST['medias']);
+            $_POST['medias'] = str_replace($globals->getHome(), "", $_POST['medias']);
 
             // On a demandé la SUPPRESSION DES FICHIERS liées au contenu
             foreach ($_POST['medias'] as $cle => $file) {
                 // strtok : Supprime les arguments après l'extension (timer...)
                 // Si le fichier est bien dans le dossier local en cours
-                if (strpos($file, $GLOBALS['media_dir']) !== false) {
-                    unlink($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . mb_convert_encoding(strtok($file, "?"), 'ISO-8859-1', 'UTF-8'));
+                if (strpos($file, $globals->getMediaDir()) !== false) {
+                    unlink($_SERVER['DOCUMENT_ROOT'] . $globals->getPath()  . mb_convert_encoding(strtok($file, "?"), 'ISO-8859-1', 'UTF-8'));
                 }
             }
         }
@@ -1077,11 +1078,11 @@ switch ($_GET['mode']) {
             <script>
               $(function () {
                 // Message page supprimé
-                light("<?php $languageFc->_e("Page deleted, redirecting")?> <i class='fa fa-cog fa-spin mlt'></i>");
+                light("<?php $languageFn->_e("Page deleted, redirecting")?> <i class='fa fa-cog fa-spin mlt'></i>");
 
                 // Redirection vers la page d'accueil
                 setTimeout(function () {
-                  document.location.href = "<?=$GLOBALS['home'];?>";
+                  document.location.href = "<?=$globals->getHome();?>";
                 }, 2000);
               });
             </script>
@@ -1095,19 +1096,19 @@ switch ($_GET['mode']) {
 
         include_once("db.php"); // Connexion à la db
 
-        $connexion->login('medium'); // Vérifie que l'on a le droit d'éditer une page
+        $connexionFn->login('medium'); // Vérifie que l'on a le droit d'éditer une page
 
         $type = null;
 
-        echo '<div class="dialog-list-content" title="' . $languageFc->__("List of contents") . '"><ul class="mtn mbs pls">';
+        echo '<div class="dialog-list-content" title="' . $languageFn->__("List of contents") . '"><ul class="mtn mbs pls">';
 
-        $sel = $dataBase->getConnect()->query("SELECT title, state, type, tpl, url, date_update FROM " . $GLOBALS['table_content'] . " WHERE lang='" .  $globals->lang . "' ORDER BY FIELD(type, 'page', 'article', 'product'), type ASC, title ASC"); //date_update DESC
+        $sel = $dataBase->getConnect()->query("SELECT title, state, type, tpl, url, date_update FROM " . $globals->getTableContent() . " WHERE lang='" .  $globals->getLang() . "' ORDER BY FIELD(type, 'page', 'article', 'product'), type ASC, title ASC"); //date_update DESC
         while ($res = $sel->fetch_assoc()) {
             if ($res['type'] != $type) {
-                echo(isset($type) ? '</ul></li>' : '') . '<li' . (isset($type) ? ' class="mtm"' : '') . '><b>' . ucfirst($languageFc->__($res['type'])) . '</b><ul>';
+                echo(isset($type) ? '</ul></li>' : '') . '<li' . (isset($type) ? ' class="mtm"' : '') . '><b>' . ucfirst($languageFn->__($res['type'])) . '</b><ul>';
             }
 
-            echo '<li title="' . $res['date_update'] . ' - ' . $res['tpl'] . '"' . ($res['state'] == 'archive' ? ' class="red"' : '') . '><a href="' . $navigation->make_url($res['url'], ["domaine" => true]) . '">' . ($res['title'] ? $res['title'] : $languageFc->__("Under Construction")) . '</a>' . ($res['state'] == "active" ? "" : " <i class='fa fa-eye-off' title='" . $languageFc->__($res['state']) . "'></i>") . '</li>';
+            echo '<li title="' . $res['date_update'] . ' - ' . $res['tpl'] . '"' . ($res['state'] == 'archive' ? ' class="red"' : '') . '><a href="' . $navigationFn->make_url($res['url'], ["domaine" => true]) . '">' . ($res['title'] ? $res['title'] : $languageFn->__("Under Construction")) . '</a>' . ($res['state'] == "active" ? "" : " <i class='fa fa-eye-off' title='" . $languageFn->__($res['state']) . "'></i>") . '</li>';
 
             $type = $res['type'];
         }
@@ -1121,9 +1122,9 @@ switch ($_GET['mode']) {
 
         //@todo Vérifier qu'il n'y a pas déjà un contenu avec la même URL
 
-        $connexion->login('medium', 'edit-' . ($_POST['type'] ? $navigation->encode($_POST['type']) : "page")); // Vérifie que l'on a le droit d'éditer une page
+        $connexionFn->login('medium', 'edit-' . ($_POST['type'] ? $navigationFn->encode($_POST['type']) : "page")); // Vérifie que l'on a le droit d'éditer une page
 
-        echo $navigation->encode($_POST['title']);
+        echo $navigationFn->encode($_POST['title']);
 
         break;
 
@@ -1132,7 +1133,7 @@ switch ($_GET['mode']) {
 
         include_once("db.php"); // Connexion à la db
 
-        $connexion->login('medium'); // Vérifie que l'on a le droit d'éditer une page
+        $connexionFn->login('medium'); // Vérifie que l'on a le droit d'éditer une page
 
         // Si on a déjà un bout d'url de saisie (cas des tags) on prend le dernier bout
         if (strstr($_GET["term"], "/")) {
@@ -1143,7 +1144,7 @@ switch ($_GET['mode']) {
 
 
         // LES CONTENUS
-        $sql = "SELECT id, title, type, url FROM " . $GLOBALS['table_content'] . " WHERE title LIKE '%" . $term . "%' OR url LIKE '%" . $term . "%'";
+        $sql = "SELECT id, title, type, url FROM " . $globals->getTableContent() . " WHERE title LIKE '%" . $term . "%' OR url LIKE '%" . $term . "%'";
         if (!$term) {
             $sql .= " ORDER BY date_update DESC";
         } else {
@@ -1156,26 +1157,26 @@ switch ($_GET['mode']) {
                 'id' => $res['id'],
                 'label' => $res['title'],
                 'type' => $res['type'],
-                'value' => $navigation->make_url($res['url'], ["absolu" => true]) //, ["domaine" => true]
+                'value' => $navigationFn->make_url($res['url'], ["absolu" => true]) //, ["domaine" => true]
             ];
         }
 
 
         // LES TAGS
-        $sql = "SELECT * FROM " . $GLOBALS['tt'] . " WHERE name LIKE '%" . $term . "%' GROUP BY encode ORDER BY encode ASC LIMIT 50";
+        $sql = "SELECT * FROM " . $globals->getTt() . " WHERE name LIKE '%" . $term . "%' GROUP BY encode ORDER BY encode ASC LIMIT 50";
         $sel = $dataBase->getConnect()->query($sql);
         while ($res = $sel->fetch_assoc()) {
             $data[$res['encode'] . $res['zone']] = [
                 'id' => 'tag',
                 'label' => $res['name'],
                 'type' => 'Tag ' . $res['zone'],
-                'value' => $navigation->make_url($res['zone'], [$res['encode'], "absolu" => true]) //, ["domaine" => true]
+                'value' => $navigationFn->make_url($res['zone'], [$res['encode'], "absolu" => true]) //, ["domaine" => true]
             ];
         }
 
 
         // LES MÉDIAS
-        $full_path = $GLOBALS['path'] . $GLOBALS['media_dir'] . '/' . (@$_GET['dir'] ? $_GET['dir'] . '/' : '');
+        $full_path = $globals->getPath()  . $globals->getMediaDir() . '/' . (@$_GET['dir'] ? $_GET['dir'] . '/' : '');
         $dir = $_SERVER['DOCUMENT_ROOT'] . $full_path;
 
         // Le dossier existe
@@ -1186,7 +1187,7 @@ switch ($_GET['mode']) {
             // Crée un tableau avec les fichiers du dossier
             foreach ($scandir as $cle => $filename) {
                 // Le fichier contient les mots de la recherche, ce n'est pas un thumbs, htaccess, ou dossier
-                if (strpos($filename, $navigation->encode($_GET["term"])) !== false
+                if (strpos($filename, $navigationFn->encode($_GET["term"])) !== false
                     and $filename != "Thumbs.db"
                     and $filename != ".htaccess"
                     and !is_dir($dir . $filename)
@@ -1212,7 +1213,7 @@ switch ($_GET['mode']) {
 
     case "add-nav": // Liste les pages absente du menu
 
-        $connexion->login('medium', 'edit-nav'); // Vérifie que l'on est admin
+        $connexionFn->login('medium', 'edit-nav'); // Vérifie que l'on est admin
 
         $menu = [];
 
@@ -1220,11 +1221,11 @@ switch ($_GET['mode']) {
         if (isset($_REQUEST['menu'])) {
             foreach ($_REQUEST['menu'] as $cle => $val) {
                 // Si c'est un lien vers la home
-                if ($val == $GLOBALS['home'] or $val == $GLOBALS['path']) {
+                if ($val == $globals->getHome() or $val == $globals->getPath()) {
                     $menu[] = "index";
                 } else {
                     // Supprime l'url root du site
-                    $val = str_replace($GLOBALS['home'], "", $val);
+                    $val = str_replace($globals->getHome(), "", $val);
 
                     $menu[] = $dataBase->getConnect()->real_escape_string($val);
                 }
@@ -1232,19 +1233,19 @@ switch ($_GET['mode']) {
         }
 
         // Quel type de contenu on ressort
-        if (isset($GLOBALS['add_menu'])) {
-            $type = "type IN ('" . implode("','", $GLOBALS['add_menu']) . "')";
+        if (count($globals->getAddMenu())) {
+            $type = "type IN ('" . implode("','", $globals->getAddMenu()) . "')";
         } else {
             $type = "type='page'";
         }
 
         // Liste les pages abs du menu
-        $sql = "SELECT * FROM " . $globals->table_content . " WHERE " . $type . " AND lang='" .  $globals->lang . "' AND url NOT IN ('" . implode("','", $menu) . "') ORDER BY title ASC";
+        $sql = "SELECT * FROM " . $globals->getTableContent() . " WHERE " . $type . " AND lang='" .  $globals->getLang() . "' AND url NOT IN ('" . implode("','", $menu) . "') ORDER BY title ASC";
         //echo $sql."<br>";
 
         $sel = $dataBase->getConnect()->query($sql);
         while ($res = $sel->fetch_assoc()) {
-            echo "<li><div class='dragger'></div><a href=\"" . $res['url'] . "\">" . $res['title'] . "</a><i onclick='$(this).parent().appendTo(\"#add-nav ul\");' class='fa fa-cancel red' title='\"+ $languageFc->__(\"Remove\") +\"'></i></li>";
+            echo "<li><div class='dragger'></div><a href=\"" . $res['url'] . "\">" . $res['title'] . "</a><i onclick='$(this).parent().appendTo(\"#add-nav ul\");' class='fa fa-cancel red' title='\"+ $languageFn->__(\"Remove\") +\"'></i></li>";
         }
 
         break;
@@ -1252,7 +1253,7 @@ switch ($_GET['mode']) {
 
     case "dialog-media":// Affichage des médias
 
-        $connexion->login('medium', 'add-media'); // Vérifie que l'on est admin
+        $connexionFn->login('medium', 'add-media'); // Vérifie que l'on est admin
 
         //echo "_POST:<br>"; highlight_string(print_r($_POST, true));
 
@@ -1266,7 +1267,7 @@ switch ($_GET['mode']) {
         //highlight_string(print_r($tab_img, true));
         ?>
 
-        <div class="dialog-media" title="<?php $languageFc->_e("Media Library") ?>">
+        <div class="dialog-media" title="<?php $languageFn->_e("Media Library") ?>">
 
             <input type="hidden" id="dialog-media-target" value="<?= htmlspecialchars($_REQUEST['target']) ?>">
             <input type="hidden" id="dialog-media-source" value="<?= htmlspecialchars($_REQUEST['source']) ?>">
@@ -1275,42 +1276,42 @@ switch ($_GET['mode']) {
             <input type="hidden" id="dialog-media-dir" value="<?= htmlspecialchars($_REQUEST['dir']) ?>">
 
             <!-- Chargement du moteur de recherche des médias -->
-            <input type="text" id="recherche-media" placeholder="<?php $languageFc->_e("Search") ?>" class="mrl">
+            <input type="text" id="recherche-media" placeholder="<?php $languageFn->_e("Search") ?>" class="mrl">
 
             <ul class="small">
 
                 <li data-filter="all">
-                    <a href="#media" title="<?php $languageFc->_e("Media") ?>">
+                    <a href="#media" title="<?php $languageFn->_e("Media") ?>">
                         <i class="fa fa-doc"></i>
-                        <span><?php $languageFc->_e("Media") ?></span>
+                        <span><?php $languageFn->_e("Media") ?></span>
                     </a>
                 </li>
 
-                <!-- <li data-filter="file"><a href="api/ajax.admin.php?mode=media&filter=file" title="<?php $languageFc->_e("Files") ?>"><i class="fa fa-file-text-o"></i> <span><?php $languageFc->_e("Files") ?></span></a></li> -->
+                <!-- <li data-filter="file"><a href="api/ajax.admin.php?mode=media&filter=file" title="<?php $languageFn->_e("Files") ?>"><i class="fa fa-file-text-o"></i> <span><?php $languageFn->_e("Files") ?></span></a></li> -->
 
-                <!-- <li data-filter="image"><a href="api/ajax.admin.php?mode=media&filter=image" title="<?php $languageFc->_e("Images") ?>"><i class="fa fa-picture-o"></i> <span><?php $languageFc->_e("Images") ?></span></a></li> -->
+                <!-- <li data-filter="image"><a href="api/ajax.admin.php?mode=media&filter=image" title="<?php $languageFn->_e("Images") ?>"><i class="fa fa-picture-o"></i> <span><?php $languageFn->_e("Images") ?></span></a></li> -->
 
                 <li data-filter="resize">
-                    <a href="<?= $GLOBALS['home'] ?>api/ajax.admin.php?mode=media&filter=resize"
-                        title="<?php $languageFc->_e("Resized") ?>">
+                    <a href="<?= $globals->getHome() ?>api/ajax.admin.php?mode=media&filter=resize"
+                        title="<?php $languageFn->_e("Resized") ?>">
                         <i class="fa fa-resize-small"></i>
-                        <span><?php $languageFc->_e("Resized") ?></span>
+                        <span><?php $languageFn->_e("Resized") ?></span>
                     </a>
                 </li>
 
                 <?php if (isset($_REQUEST['dir']) and $_REQUEST['dir']) { ?>
                     <li data-filter="dir">
-                        <a href="<?= $GLOBALS['home'] ?>api/ajax.admin.php?mode=media&filter=dir&dir=<?= urlencode($_REQUEST['dir']); ?>"
-                            title="<?php $languageFc->_e("Specific") ?>">
+                        <a href="<?= $globals->getHome() ?>api/ajax.admin.php?mode=media&filter=dir&dir=<?= urlencode($_REQUEST['dir']); ?>"
+                            title="<?php $languageFn->_e("Specific") ?>">
                             <i class="fa fa-file"></i>
-                            <span><?php $languageFc->_e("Specific") ?></span>
+                            <span><?php $languageFn->_e("Specific") ?></span>
                         </a>
                     </li>
                 <?php } ?>
 
-                <!-- <li data-filter="video"><a href="api/ajax.admin.php?mode=media&filter=video" title="<?php $languageFc->_e("Videos") ?>"><i class="fa fa-film"></i> <span><?php $languageFc->_e("Videos") ?></span></a></li>
+                <!-- <li data-filter="video"><a href="api/ajax.admin.php?mode=media&filter=video" title="<?php $languageFn->_e("Videos") ?>"><i class="fa fa-film"></i> <span><?php $languageFn->_e("Videos") ?></span></a></li>
 
-				<li data-filter="audio"><a href="api/ajax.admin.php?mode=media&filter=audio" title="<?php $languageFc->_e("Audios") ?>"><i class="fa fa-volume-up"></i> <span><?php $languageFc->_e("Audios") ?></span></a></li> -->
+				<li data-filter="audio"><a href="api/ajax.admin.php?mode=media&filter=audio" title="<?php $languageFn->_e("Audios") ?>"><i class="fa fa-volume-up"></i> <span><?php $languageFn->_e("Audios") ?></span></a></li> -->
 
             </ul>
 
@@ -1338,7 +1339,7 @@ switch ($_GET['mode']) {
 
                 // Option de resize à afficher ?
                 if (!$("#dialog-media-width").val() && !$("#dialog-media-height").val())
-                  var resize = "<a class='resize' title=\"<?php $languageFc->_e("Get resized image");?>\"><i class='fa fa-fw fa-resize-small bigger'></i></a>";
+                  var resize = "<a class='resize' title=\"<?php $languageFn->_e("Get resized image");?>\"><i class='fa fa-fw fa-resize-small bigger'></i></a>";
                 else
                   var resize = "";
 
@@ -1416,7 +1417,7 @@ switch ($_GET['mode']) {
                   $(this).select();
 
                   if (document.execCommand('copy')) {
-                    //light("<?php $languageFc->_e("Copy to clipboard");?> : " + $(this).val(), 2000);
+                    //light("<?php $languageFn->_e("Copy to clipboard");?> : " + $(this).val(), 2000);
                   }
                 });
 
@@ -1633,7 +1634,7 @@ switch ($_GET['mode']) {
         // @todo: mettre player html5 si vidéo ou audio pour avoir la preview et possibilité de jouer les médias en mode zoom
         // @todo: ajouter un bouton de nettoyage qui scanne les contenus et regarde si les fichiers sont utilisés
 
-        $connexion->login('medium', 'add-media'); // Vérifie que l'on est admin
+        $connexionFn->login('medium', 'add-media'); // Vérifie que l'on est admin
 
         //echo"_POST";print_r($_POST);echo"_GET";print_r($_GET);
 
@@ -1645,7 +1646,7 @@ switch ($_GET['mode']) {
             $subfolder .= $_GET['dir'] . '/';
         }
 
-        $dir = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . $GLOBALS['media_dir'] . '/' . $subfolder;
+        $dir = $_SERVER['DOCUMENT_ROOT'] . $globals->getPath()  . $globals->getMediaDir() . '/' . $subfolder;
 
         // Le dossier existe
         if (is_dir($dir)) {
@@ -1725,20 +1726,20 @@ switch ($_GET['mode']) {
                 ?>
                 <li class="add-media pas mat tc big" onclick="document.getElementById('add-media').click();">
                     <i class="fa fa-upload biggest pbs"></i><br>
-                    <?php $languageFc->_e("Drag and drop a file here or click me"); ?>
+                    <?php $languageFn->_e("Drag and drop a file here or click me"); ?>
                     <input type="file" id="add-media" style="display: none" multiple>
                 </li>
                 <?php
             }
 
             // Si il y a des dossier
-            if (@$GLOBALS['list_media_dir'] and isset($is_dir) and is_array($is_dir) and count($is_dir)) {
+            if ($globals->isListMediaDir() and isset($is_dir) and is_array($is_dir) and count($is_dir)) {
                 foreach ($is_dir as $cle => $val) {
                     echo '<li 
 					class="pat mat tc"
 					title="' . mb_convert_encoding($val, 'UTF-8', mb_list_encodings()) . '"
-					id="dialog-media-dir-' . $navigation->encode((isset($_GET['filter']) ? $_GET['filter'] : '')) . '-' . $cle . '"
-					data-media="' . $GLOBALS['media_dir'] . '/' . $subfolder . mb_convert_encoding($val, 'UTF-8', mb_list_encodings()) . '"
+					id="dialog-media-dir-' . $navigationFn->encode((isset($_GET['filter']) ? $_GET['filter'] : '')) . '-' . $cle . '"
+					data-media="' . $globals->getMediaDir() . '/' . $subfolder . mb_convert_encoding($val, 'UTF-8', mb_list_encodings()) . '"
 					data-dir="' . trim($subfolder, '/') . mb_convert_encoding($val, 'UTF-8', mb_list_encodings()) . '"
 					data-type="dir"
 					>
@@ -1826,8 +1827,8 @@ switch ($_GET['mode']) {
                     echo '<li 
 						class="pat mat tc"
 						title="' . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . ' | ' . date("d-m-Y H:i:s", $val['time']) . ' | ' . $val['mime'] . '"
-						id="dialog-media-' . $navigation->encode((isset($_GET['filter']) ? $_GET['filter'] : '')) . '-' . $i . '"
-						data-media="' . $GLOBALS['media_dir'] . '/' . $subfolder . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . '"
+						id="dialog-media-' . $navigationFn->encode((isset($_GET['filter']) ? $_GET['filter'] : '')) . '-' . $i . '"
+						data-media="' . $globals->getMediaDir() . '/' . $subfolder . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . '"
 						data-dir="' . trim((string)$subfolder, '/') . '"
 						data-type="' . $type . '"
 					>';
@@ -1836,35 +1837,35 @@ switch ($_GET['mode']) {
 
                     if ($type == "image") {
                         // Poids
-                        if (isset($GLOBALS['img_green']) and
-                            $val['size'] <= $GLOBALS['img_green']) {
+                        if (($globals->getImgGreen() !== "") and
+                            $val['size'] <= $globals->getImgGreen()) {
                             $sizecolor = 'green';
-                        } elseif (isset($GLOBALS['img_warning']) and
-                            $val['size'] > $GLOBALS['img_green'] and $val['size'] < $GLOBALS['img_warning']) {
+                        } elseif (($globals->getImgWarning() !== "") and
+                            $val['size'] > $globals->getImgGreen()  and $val['size'] < $globals->getImgWarning()) {
                             $sizecolor = 'orange';
-                        } elseif (isset($GLOBALS['img_warning']) and
-                            $val['size'] >= $GLOBALS['img_warning']) {
+                        } elseif (($globals->getImgWarning() !== "") and
+                            $val['size'] >= $globals->getImgWarning()) {
                             $sizecolor = 'red';
                         }
 
                         // Affichage de l'image
-                        $src = $GLOBALS['path'] . $GLOBALS['media_dir'] . '/' . $subfolder . $val['filename'];
+                        $src = $globals->getPath()  . $globals->getMediaDir() . '/' . $subfolder . $val['filename'];
 
                         echo '<img src="' . ($i <= 20 ? $src : '') . '"' . ($i > 20 ? ' data-src="' . $src . '" loading="lazy"' : '') . '>';
 
-                        echo '<a class="resize" title="' . $languageFc->__("Get resized image") . '"><i class="fa fa-fw fa-resize-small bigger"></i></a>';
+                        echo '<a class="resize" title="' . $languageFn->__("Get resized image") . '"><i class="fa fa-fw fa-resize-small bigger"></i></a>';
                     } else {
                         echo '<div class="file"><i class="fa fa-fw fa-' . $fa . ' mega"></i><div>' . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . '</div></div>';
 
-                        echo '<div class="copy"><input type="text" value="' . $GLOBALS['path'] . $GLOBALS['media_dir'] . '/' . $subfolder . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . '" title="' . $languageFc->__("Copy to clipboard") . '"></div>';
+                        echo '<div class="copy"><input type="text" value="' . $globals->getPath()  . $globals->getMediaDir() . '/' . $subfolder . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . '" title="' . $languageFn->__("Copy to clipboard") . '"></div>';
 
-                        echo '<a href="' . $GLOBALS['path'] . $GLOBALS['media_dir'] . '/' . $subfolder . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . '" class="open" target="_blank"><i class="fa fa-fw fa-link-ext"></i></a>';
+                        echo '<a href="' . $globals->getPath()  . $globals->getMediaDir() . '/' . $subfolder . mb_convert_encoding($val['filename'], 'UTF-8', mb_list_encodings()) . '" class="open" target="_blank"><i class="fa fa-fw fa-link-ext"></i></a>';
                     }
 
                     echo "						
 						<div class='mime " . $sizecolor . "'>" . $val['mime'] . "</div>
 						<div class='infos'>" . $info . " - " . $size . "</div>
-						<a class='supp' title=\"" . $languageFc->__("Delete file") . "\"><i class='fa fa-fw fa-trash bigger'></i></a>
+						<a class='supp' title=\"" . $languageFn->__("Delete file") . "\"><i class='fa fa-fw fa-trash bigger'></i></a>
 					</li>";
 
                     $i++;
@@ -1890,26 +1891,26 @@ switch ($_GET['mode']) {
 
     case "del-media":// Supprime un fichier
 
-        $connexion->login('medium', 'add-media'); // Vérifie que l'on est admin
+        $connexionFn->login('medium', 'add-media'); // Vérifie que l'on est admin
 
         // @todo Nettoyer l'URL de la request pour éviter des suppressions hors dossier médias
 
-        return unlink($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . mb_convert_encoding(strtok($_REQUEST['file'], "?"), 'ISO-8859-1', 'UTF-8'));
+        return unlink($_SERVER['DOCUMENT_ROOT'] . $globals->getPath()  . mb_convert_encoding(strtok($_REQUEST['file'], "?"), 'ISO-8859-1', 'UTF-8'));
 
         break;
 
     case "get-img":// Renvoi une image et la resize si nécessaire
 
-        $connexion->login('medium', 'add-media'); // Vérifie que l'on est admin
+        $connexionFn->login('medium', 'add-media'); // Vérifie que l'on est admin
 
         if (@$_POST['dir']) {
-            $dir = $navigation->encode($_POST['dir'], "-", ['/', '_']);
+            $dir = $navigationFn->encode($_POST['dir'], "-", ['/', '_']);
         } else {
             $dir = null;
         }
 
         // On supprime les ? qui pourrait gêner à la récupération de l'image
-        $file = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . strtok($_POST['img'], "?");
+        $file = $_SERVER['DOCUMENT_ROOT'] . $globals->getPath()  . strtok($_POST['img'], "?");
 
         // Option crop, convert, compress
         if (@$_POST['crop'] == 'true') {
@@ -1921,14 +1922,14 @@ switch ($_GET['mode']) {
         }
 
         // Resize l'image ou simple copie
-        echo $image->resize($file, @(int)$_POST['width'], @(int)$_POST['height'], $dir, $option);
+        echo $imageFn->resize($file, @(int)$_POST['width'], @(int)$_POST['height'], $dir, $option);
 
         break;
 
 
     case "add-media":// Envoi d'une image sur le serveur et la resize si nécessaire (upload)
 
-        $connexion->login('medium', 'add-media'); // Vérifie que l'on est admin
+        $connexionFn->login('medium', 'add-media'); // Vérifie que l'on est admin
 
         //echo "_POST:<br>"; highlight_string(print_r($_POST, true));
         //echo "_FILES:<br>"; highlight_string(print_r($_FILES, true));
@@ -1937,14 +1938,14 @@ switch ($_GET['mode']) {
 
         // Si la taille du fichier est supérieure a la taille limitée par le serveur
         if ($_FILES['file']['error'] == 1) {
-            exit('<script>error("' . $languageFc->__("The file exceeds the send size limit of ") . ini_get("upload_max_filesize") . '");</script>');
+            exit('<script>error("' . $languageFn->__("The file exceeds the send size limit of ") . ini_get("upload_max_filesize") . '");</script>');
         }
 
         // Récupération de l'extension
         $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
 
         // Hack protection : contre les doubles extensions = Encode le nom de fichier + supprime l'extension qui ne passe pas l'encode et l'ajoute après
-        $filename = $navigation->encode(basename($_FILES['file']['name'], "." . $ext)) . "." . strtolower($ext);
+        $filename = $navigationFn->encode(basename($_FILES['file']['name'], "." . $ext)) . "." . strtolower($ext);
 
         // @todo trouver la bonne regex qui permet de n'avoir qu'un seul point
         // 2ème passe avec une whitelist pour supp tous les autres caractères indésirables et n'avoir qu'un seul point (pour l'ext)
@@ -1952,17 +1953,17 @@ switch ($_GET['mode']) {
         // /^[a-z0-9]+\.[a-z]{3,4}$/  /[^a-z0-9\._-]+/  ([^a-z0-9\.\-_]|[\.]{2,})  [a-zA-Z0-9]{1,200}\.[a-zA-Z0-9]{1,10}
 
         if (@$_POST['dir']) {
-            $dir = $navigation->encode($_POST['dir'], '-', ['/', '_']);
+            $dir = $navigationFn->encode($_POST['dir'], '-', ['/', '_']);
         } else {
             $dir = null;
         }
 
-        $src_file = $GLOBALS['media_dir'] . '/' . ($dir ? $dir . '/' : '') . $filename;
-        $root_file = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . $src_file;
+        $src_file = $globals->getMediaDir() . '/' . ($dir ? $dir . '/' : '') . $filename;
+        $root_file = $_SERVER['DOCUMENT_ROOT'] . $globals->getPath()  . $src_file;
 
         // Check si le fichier est déjà sur le serveur
         if (file_exists($root_file)) {
-            exit('<script>error("' . $languageFc->__("A file with the same name already exists") . '");</script>');
+            exit('<script>error("' . $languageFn->__("A file with the same name already exists") . '");</script>');
         }
 
         // Check le type mime côté serveur
@@ -1972,7 +1973,7 @@ switch ($_GET['mode']) {
 
         // Vérifie que le type mime est supporté (Hack protection : contre les mauvais mimes types)
         // + Le fichier tmp ne contient pas de php ou de javascript
-        if ($image->file_check('file')) {
+        if ($imageFn->file_check('file')) {
             @mkdir(dirname($root_file), 0705, true);
 
             // Upload du fichier
@@ -1983,8 +1984,8 @@ switch ($_GET['mode']) {
                 // Si c'est une image
                 if ($type == "image") {
                     // Resize l'image si besoin
-                    // SUPP ?? (On ajoute le path du site pour gerer l'édition dans les sous catégories) $GLOBALS['path']. => maintenant ça se passe dans le edit.js
-                    echo $image->img_process(
+                    // SUPP ?? (On ajoute le path du site pour gerer l'édition dans les sous catégories) $globals->getPath() . => maintenant ça se passe dans le edit.js
+                    echo $imageFn->img_process(
                         $root_file,
                         $dir,
                         (int)$_POST['width'],
@@ -2003,19 +2004,19 @@ switch ($_GET['mode']) {
 
     case "dialog-icon":// Affichage des médias
 
-        $connexion->login('medium', 'edit-page'); // Vérifie que l'on est admin
+        $connexionFn->login('medium', 'edit-page'); // Vérifie que l'on est admin
 
         // @todo: ajouter une recherche en js (qui masque)
         ?>
 
-        <div class="dialog-icon" title="<?php $languageFc->_e("Icon Library") ?>">
+        <div class="dialog-icon" title="<?php $languageFn->_e("Icon Library") ?>">
 
             <input type="hidden" id="dialog-icon-target"
                    value="<?= (isset($_GET['target']) ? htmlspecialchars($_GET['target']) : ""); ?>"> <!-- SUPP ?? -->
             <input type="hidden" id="dialog-icon-source"
                    value="<?= htmlspecialchars(isset($_GET['target']) ? $_GET['source'] : "") ?>">
 
-            <input type="text" class="search w20 mbs" placeholder="<?php $languageFc->_e("Search") ?>" value="">
+            <input type="text" class="search w20 mbs" placeholder="<?php $languageFn->_e("Search") ?>" value="">
 
             <?php
             //$pattern = '/\.([\w-]+):before\s*{\s*content:\s*(["\']\\\w+["\']);?\s*}/';
@@ -2026,16 +2027,16 @@ switch ($_GET['mode']) {
             $pattern = "/\\.(fa-(?:[a-z-]*)):before{content:'(\\\\\\w+)'}/";
 
         // Url du fichier qui contient les icônes
-        if ($GLOBALS['icons']) {
-            $file = $GLOBALS['icons'];
+        if ($globals->getIcons() !== "") {
+            $file = $globals->getIcons();
         } else {
-            //$file = $GLOBALS['scheme'].$GLOBALS['domain'].$GLOBALS['path'].'api/global.min.css';
-            $file = $GLOBALS['scheme'] . $GLOBALS['domain'] . $GLOBALS['path'] . 'theme/' . $GLOBALS['theme'] . '/style.min.css';
+            //$file = $globals->getScheme().$globals->getDomain() .$globals->getPath() .'api/global.min.css';
+            $file = $globals->getScheme() . $globals->getDomain()  . $globals->getPath()  . 'theme/' . $globals->getTheme() . '/style.min.css';
         }
 
 
         // On récupère le contenu du fichier css qui contient les icones
-        $content = $connexion->curl($file);
+        $content = $connexionFn->curl($file);
 
         // Nécessite allow_url_include
         //$content = file_get_contents($file);
@@ -2101,9 +2102,9 @@ switch ($_GET['mode']) {
 
         include_once("db.php"); // Connexion à la db
 
-        $connexion->login('medium');
+        $connexionFn->login('medium');
 
-        $sel_tag = $dataBase->getConnect()->query("SELECT distinct encode, name FROM " . $globals->table_tag . " WHERE zone='" . $navigation->encode($_POST['zone']) . "' AND lang='" .  $globals->lang . "' ORDER BY ordre ASC, encode ASC");
+        $sel_tag = $dataBase->getConnect()->query("SELECT distinct encode, name FROM " . $globals->getTableTag() . " WHERE zone='" . $navigationFn->encode($_POST['zone']) . "' AND lang='" .  $globals->getLang() . "' ORDER BY ordre ASC, encode ASC");
         while ($res_tag = $sel_tag->fetch_assoc()) {
             $tab_tag[] = $res_tag['name'];
         }
@@ -2119,7 +2120,6 @@ switch ($_GET['mode']) {
 
 
 // Fermeture de la connexion
-if (isset($GLOBALS['connect']->thread_id)) {
-    @$GLOBALS['connect']->close();
+if (isset($dataBase->getConnect()->thread_id)) {
+    $dataBase->getConnect()->close();
 }
-?>

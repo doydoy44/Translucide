@@ -3,6 +3,7 @@
 namespace Translucide\db;
 
 use \mysqli;
+use Translucide\services\Globals;
 
 class DataBase
 {
@@ -15,6 +16,8 @@ class DataBase
     private static array $instances = [];
 
     private ?mysqli $connect;
+    private ?Globals $globals = null;
+    
     protected function __construct()
     {
     }
@@ -36,17 +39,25 @@ class DataBase
         return self::$instances[$cls];
     }
 
+    public function getGlobals(): Globals
+    {
+        if (!$this->globals) {
+            $this->globals = Globals::getInstance();
+        }
+        return $this->globals;
+    }
+
     // Pour un bon encodage dans les sorties de la page
     private function init(): void
     {
-        if ($GLOBALS['db_charset']) {
-            $this->connect->query("SET NAMES '" . $GLOBALS['db_charset'] . "'");
+        if ($this->getGlobals()->getDbCharset()) {
+            $this->connect->query("SET NAMES '" . $this->getGlobals()->getDbCharset() . "'");
         }
     }
 
     public function setGlobalConnexion(): void
     {
-        $this->connect = new mysqli($GLOBALS['db_server'], $GLOBALS['db_user'], $GLOBALS['db_pwd'], $GLOBALS['db']);
+        $this->connect = new mysqli($this->getGlobals()->getDbServer(), $this->getGlobals()->getDbUser(), $this->getGlobals()->getDbPwd(), $this->getGlobals()->getDb());
 
         // Si pas de connexion, on affiche pour Google une indisponibilité
         if ($this->connect->connect_errno) {

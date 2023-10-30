@@ -8,29 +8,30 @@ use Translucide\services\UtilsFunctionsNavigation;
 if (!$GLOBALS['domain']) {
     exit;
 }
-$dataBase = DataBase::getInstance();
-$contentFc = UtilsFunctionsContent::getInstance();
-$navigation = UtilsFunctionsNavigation::getInstance();
+
 $globals = Globals::getInstance();
+$dataBase = DataBase::getInstance();
+$contentFn = UtilsFunctionsContent::getInstance();
+$navigationFn = UtilsFunctionsNavigation::getInstance();
 ?>
 
 <footer role="contentinfo">
     <section class="mw960p center grid">
         <div>
-            <?php $contentFc->h3('footer-titre-contact', 'medium up') ?>
-            <?php $contentFc->txt('footer-texte-contact') ?>
+            <?php $contentFn->h3('footer-titre-contact', 'medium up') ?>
+            <?php $contentFn->txt('footer-texte-contact') ?>
         </div>
         <div>
-            <?php $contentFc->h3('footer-titre-actu', 'medium up') ?>
+            <?php $contentFn->h3('footer-titre-actu', 'medium up') ?>
             <!--Va chercher les dernieres actu-->
             <ul class="unstyled pan">
                 <?php
-                $sel_actu = $dataBase->getConnect()->query("SELECT * FROM " . $globals->tc . " WHERE (type='article' OR type='event') AND lang='" . $globals->lang . "' AND state='active' ORDER BY date_insert DESC LIMIT 0, 3");
+                $sel_actu = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTc() . " WHERE (type='article' OR type='event') AND lang='" . $globals->getLang() . "' AND state='active' ORDER BY date_insert DESC LIMIT 0, 3");
                 while ($res_actu = $sel_actu->fetch_assoc()) {
                 ?>
                     <li class="mbs"><i
                                 class="fa-li fa fa-fw fa-<?= ($res_actu['type'] == 'article' ? 'rss' : 'calendar-empty') ?> fl mrt"></i>
-                        <a href="<?= $navigation->make_url($res_actu['url']); ?>" class="tdn"
+                        <a href="<?= $navigationFn->make_url($res_actu['url']); ?>" class="tdn"
                            style="color: black;">
                             <?= $res_actu['title'] ?>
                         </a>
@@ -41,11 +42,11 @@ $globals = Globals::getInstance();
             </ul>
         </div>
         <div>
-            <?php $contentFc->h3('footer-titre-suivez-nous', 'medium up') ?>
-            <?php $contentFc->txt('footer-texte-suivez-nous', 'color bigger') ?>
+            <?php $contentFn->h3('footer-titre-suivez-nous', 'medium up') ?>
+            <?php $contentFn->txt('footer-texte-suivez-nous', 'color bigger') ?>
         </div>
     </section>
-    <section class="mod w100 tc"><?php $contentFc->txt('webmaster') ?></section>
+    <section class="mod w100 tc"><?php $contentFn->txt('webmaster') ?></section>
 </footer>
 
 <noscript>

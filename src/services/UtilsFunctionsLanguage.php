@@ -15,8 +15,12 @@ class UtilsFunctionsLanguage
     private static array $instances = [];
 
     private ?UtilsFunctionsNavigation $utilsFunctionNaviation = null;
+    private ?Globals $globals = null;
 
-    private $addApiTranslation = [
+    // Langue alternative si une traduction n'existe pas
+    private string $langAlt = 'en';
+
+    private array $addApiTranslation = [
         "404 error : page not found" => ["fr" => "Erreur 404 : page introuvable"],
         "Under Construction" => ["fr" => "En construction"],
         "Site closing time" => ["fr" => "Heure de fermeture du site"],
@@ -252,6 +256,19 @@ class UtilsFunctionsLanguage
         return $this->utilsFunctionNaviation;
     }
 
+    public function getGlobals(): Globals
+    {
+        if (!$this->globals) {
+            $this->globals = Globals::getInstance();
+        }
+        return $this->globals;
+    }
+
+    public function getLangAlt(): string
+    {
+        return $this->langAlt;
+    }
+
     // Sélectionne la langue
     public function get_lang($lang = '')
     {
@@ -265,14 +282,15 @@ class UtilsFunctionsLanguage
         }
 
         // Si la langue de l'utilisateur n'existe pas pour les contenus de ce site on charge la langue par défaut
-        if (!in_array($lang, $GLOBALS['language'])) {
-            $lang = $GLOBALS['language'][0];
+        if (!in_array($lang, $this->getGlobals()->getLanguage())) {
+            $lang = $this->getGlobals()->getLanguage()[0];
         }
 
         // Création du cookie avec la langue. Utile pour le js
-        setcookie("lang", $lang, time() + $GLOBALS['session_expiration'], $GLOBALS['path'], $GLOBALS['domain']);
+        setcookie("lang", $lang, time() + $this->getGlobals()->getSessionExpiration(), $this->getGlobals()->getPath(), $this->getGlobals()->getDomain());
 
-        $GLOBALS['lang'] = $_SESSION['lang'] = $_COOKIE['lang'] = $lang;
+        $this->getGlobals()->setLang($lang);
+        $_SESSION['lang'] = $_COOKIE['lang'] = $lang;
 
         return $this->getUtilsFunctionNaviation()->encode($lang);
     }
@@ -285,15 +303,15 @@ class UtilsFunctionsLanguage
             return;
         }
         $translation_file = match ($id) {
-            "theme" => "theme/" . $GLOBALS['theme'] . ($GLOBALS['theme'] ? "/" : "") . "translation.php",
+            "theme" => "theme/" . $this->getGlobals()->getTheme() . ($this->getGlobals()->getTheme() ? "/" : "") . "translation.php",
             default => "plugin/" . $id . "/translation.php",
         };
 
         // On récupère le fichier de traduction
-        @include($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . $translation_file);
+        @include($_SERVER['DOCUMENT_ROOT'] . $this->getGlobals()->getPath() . $translation_file);
 
         // Ajoute la traduction au tableau des traductions
-        if (isset($add_translation)) {
+        if (isset($add_translation)) { // définit dans l'include au dessus
             $this->add_translation($add_translation);
         }
     }
@@ -309,7 +327,7 @@ class UtilsFunctionsLanguage
         //$add_translation = $add_translation_encode;
 
         // On ajoute la nouvelle traduction au tableau de toutes les traductions
-        $GLOBALS['translation'] = array_merge($GLOBALS['translation'], $add_translation);
+        $this->getGlobals()->setTranslation(array_merge($this->getGlobals()->getTranslation(), $add_translation));
     }
 
     // Retourne une traduction
@@ -317,8 +335,8 @@ class UtilsFunctionsLanguage
     {
         // Traduction direct dans la fonction
         if (is_array($singulier)) {
-            if (isset($singulier[key($singulier)][$GLOBALS['lang']])) { // Une traduction dans la langue courante
-                return $singulier[key($singulier)][$GLOBALS['lang']];
+            if (isset($singulier[key($singulier)][$this->getGlobals()->getLang()])) { // Une traduction dans la langue courante
+                return $singulier[key($singulier)][$this->getGlobals()->getLang()];
             }
             return key($singulier);
         }
@@ -329,12 +347,12 @@ class UtilsFunctionsLanguage
         }
 
         // Si une traduction existe
-        if (isset($GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang']])) {
-            return $GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang']];
+        if (isset($this->getGlobals()->getTranslation()[mb_strtolower($txt)][$this->getGlobals()->getLang()])) {
+            return $this->getGlobals()->getTranslation()[mb_strtolower($txt)][$this->getGlobals()->getLang()];
         }
         // Si une langue alternative est définie et qu'une traduction existe
-        if (isset($GLOBALS['lang_alt']) and isset($GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang_alt']])) {
-            return $GLOBALS['translation'][mb_strtolower($txt)][$GLOBALS['lang_alt']];
+        if (isset($this->getGlobals()->getTranslation()[mb_strtolower($txt)][$this->langAlt])) {
+            return $this->getGlobals()->getTranslation()[mb_strtolower($txt)][$this->langAlt];
         }
 
         return $txt;

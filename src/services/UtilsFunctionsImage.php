@@ -16,6 +16,7 @@ class UtilsFunctionsImage
 
     private ?UtilsFunctionsNavigation $utilsFunctionNaviation = null;
     private ?UtilsFunctionsLanguage $utilsFunctionsLanguage = null;
+    private ?Globals $globals = null;
 
     protected function __construct()
     {
@@ -59,6 +60,14 @@ class UtilsFunctionsImage
         return $this->utilsFunctionsLanguage;
     }
 
+    public function getGlobals(): Globals
+    {
+        if (!$this->globals) {
+            $this->globals = Globals::getInstance();
+        }
+        return $this->globals;
+    }
+
     // Verifie que le fichier et supporter et pas de hack
     public function file_check($file, $force_file_check_hack = false)
     {
@@ -67,8 +76,8 @@ class UtilsFunctionsImage
         finfo_close($finfo);
 
         // Vérifie que le type mime est supporté (Hack protection : contre les mauvais mimes types)
-        if (in_array($file_infos['mime'], $GLOBALS['mime_supported'])) {
-            if (@$GLOBALS['file_check_hack'] or $force_file_check_hack) {
+        if (in_array($file_infos['mime'], $this->getGlobals()->getMimeSupported())) {
+            if ($this->getGlobals()->getFileCheckHack() or $force_file_check_hack) {
                 // Le fichier tmp ne contient pas de php ou de javascript
                 if (!preg_match("/<\?php|<\? |<\?=|<scr/", file_get_contents($_FILES[$file]['tmp_name']), $matches)) {
                     return true;
@@ -104,22 +113,22 @@ class UtilsFunctionsImage
         $source_ext = pathinfo($source_file, PATHINFO_EXTENSION);
 
         // file_name : on récup le nom du fichier, on lui supp l'extension (qui ne passe pas l'encode), on l'encode
-        $root_dir = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'];
+        $root_dir = $_SERVER['DOCUMENT_ROOT'] . $this->getGlobals()->getPath();
         $file_name = $this->getUtilsFunctionNaviation()->encode(basename(basename($source_file), "." . $source_ext));
 
         // Dossier final d'image redimensionnée
         $dir = ($dest_dir ? $dest_dir . '/' : '');
 
         // dir clean si media forcé
-        $dir_clean = ltrim(str_replace($GLOBALS['media_dir'], '', $dir), '/');
+        $dir_clean = ltrim(str_replace($this->getGlobals()->getMediaDir(), '', $dir), '/');
 
         // Si image à réduire ou à forcer
         if (($new_width and $source_width > $new_width) or ($new_height and $source_height > $new_height) or $option) {
             // Version original pour le zoom
-            $zoom = $GLOBALS['media_dir'] . '/' . $dir_clean . $file_name . '.' . $source_ext;
+            $zoom = $this->getGlobals()->getMediaDir() . '/' . $dir_clean . $file_name . '.' . $source_ext;
 
             // Si media dans dir on force. ne met pas dans /resize/
-            $dir = (strpos($dir, $GLOBALS['media_dir']) === 0 ? '' : $GLOBALS['media_dir'] . '/resize/') . $dir;
+            $dir = (str_starts_with($dir, $this->getGlobals()->getMediaDir()) ? '' : $this->getGlobals()->getMediaDir() . '/resize/') . $dir;
 
             // Crée les dossiers
             @mkdir($root_dir . $dir, 0755, true);
@@ -267,13 +276,13 @@ class UtilsFunctionsImage
                     imagegif($final_img, $root_dir . $dir . $file_name_ext);
                     break;
                 case 2:
-                    imagejpeg($final_img, $root_dir . $dir . $file_name_ext, $GLOBALS['jpg_quality']);
+                    imagejpeg($final_img, $root_dir . $dir . $file_name_ext, $this->getGlobals()->getJpgQuality());
                     break;
                 case 3:
                     imagepng($final_img, $root_dir . $dir . $file_name_ext);
-                    break; // $GLOBALS['png_quality']
+                    break; // $this->getGlobals()->getPngQuality()
                 case 18:
-                    imagewebp($final_img, $root_dir . $dir . $file_name_ext, $GLOBALS['webp_quality']);
+                    imagewebp($final_img, $root_dir . $dir . $file_name_ext, $this->getGlobals()->getWepbQuality());
                     break;
             }
 
@@ -281,7 +290,7 @@ class UtilsFunctionsImage
         } else { // Copie l'image si elle est plus petite ou à la bonne taille
             $zoom = ""; // Pas de zoom
 
-            $dir = $GLOBALS['media_dir'] . "/" . $dir_clean; // @todo ajouter le dir (sans resize)
+            $dir = $this->getGlobals()->getMediaDir() . "/" . $dir_clean; // @todo ajouter le dir (sans resize)
             $file_name_ext = $file_name . "." . $source_ext;
 
             @mkdir($root_dir . $dir, 0755, true); // Crée les dossiers
@@ -297,14 +306,14 @@ class UtilsFunctionsImage
     {
         // Valeur par défaut
         $option = null;
-        $dir = ($dest_dir ? $GLOBALS['media_dir'] . '/' . $dest_dir : $GLOBALS['media_dir']);
+        $dir = ($dest_dir ? $this->getGlobals()->getMediaDir() . '/' . $dest_dir : $this->getGlobals()->getMediaDir());
         $src_file = $dir . '/' . basename($root_file) . '?' . time();
 
         // Taille de l'image uploadée
         list($source_width, $source_height, $type) = getimagesize($root_file);
 
         // Limite max de taille d'image pour l'upload global
-        list($max_width, $max_height) = explode("x", $GLOBALS['max_image_size']);
+        list($max_width, $max_height) = explode("x", $this->getGlobals()->getMaxImageSize());
 
         // On vérifie la bonne orientation de l'image jpeg
         if ($type == 2) { // Exif ne fonctionne qu'avec les jpeg
@@ -325,7 +334,7 @@ class UtilsFunctionsImage
             unlink($root_file);
 
             // La maxsize devient l'image root (explode: supp le timer)
-            $root_file = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . explode("?", $src_file)[0];
+            $root_file = $_SERVER['DOCUMENT_ROOT'] . $this->getGlobals()->getPath() . explode("?", $src_file)[0];
         }
 
 
@@ -335,7 +344,7 @@ class UtilsFunctionsImage
 
             //unlink($root_file); // Si on a redimensionné on supp l'image de base
         } else { // Pas de redimensionnement
-            $dest_file = $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . explode("?", $src_file)[0];
+            $dest_file = $_SERVER['DOCUMENT_ROOT'] . $this->getGlobals()->getPath() . explode("?", $src_file)[0];
 
             // Le fichier destination est demandé dans un endroit different du fichier source
             if ($root_file != $dest_file) {

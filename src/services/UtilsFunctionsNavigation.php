@@ -14,6 +14,7 @@ class UtilsFunctionsNavigation
      */
     private static array $instances = [];
 
+    private ?Globals $globals = null;
 
     protected function __construct()
     {
@@ -39,6 +40,14 @@ class UtilsFunctionsNavigation
         }
 
         return self::$instances[$cls];
+    }
+
+    public function getGlobals(): Globals
+    {
+        if (!$this->globals) {
+            $this->globals = Globals::getInstance();
+        }
+        return $this->globals;
     }
 
 
@@ -96,20 +105,20 @@ class UtilsFunctionsNavigation
 
         // Parse l'url pour ne garder que la partie rewrite sans le chemin de base du site
         $parse_url = parse_url($url_source);
-        $path = preg_replace("/^" . addcslashes($GLOBALS['path'], "/") . "*/", "", $parse_url['path']);
+        $path = preg_replace("/^" . addcslashes($this->getGlobals()->getPath(), "/") . "*/", "", $parse_url['path']);
 
         // Si l'url est vide : url = index
         if (!$this->encode($path)) {
-            $url = (isset($GLOBALS['static']) ? 'index' : 'home');
+            $url = ($this->getGlobals()->isStatic() ? 'index' : 'home');
         } // @todo mettre que 'index' à terme 13/07/2020
         else {
-            // Si il y a des filtres/page dans l'url
+            // S'il y a des filtres/page dans l'url
             if (strstr($parse_url['path'], "/") or strstr($parse_url['path'], "page_")) {
                 $explode_path = explode("/", $path);
 
                 // Home si le premier element est la nav par page
                 if (strstr($explode_path[0], "page_")) {
-                    $url = (isset($GLOBALS['static']) ? 'index' : 'home');
+                    $url = ($this->getGlobals()->isStatic() ? 'index' : 'home');
                 } // @todo mettre que 'index' à terme
                 else {
                     $url = $explode_path[0]; // Url raçine
@@ -122,8 +131,10 @@ class UtilsFunctionsNavigation
                     $explode_dir = explode("_", $dir);
 
                     if ($explode_dir[0]) {
-                        $GLOBALS['filter'][$this->encode($explode_dir[0], "-", [".", "'"])] =
+                        $filter = $this->getGlobals()->getFilter();
+                        $filter[$this->encode($explode_dir[0], "-", [".", "'"])] =
                             $this->encode(preg_replace("/^" . $explode_dir[0] . "_/", "", $dir), "-", [".", "_", "'", "@"]);
+                        $this->getGlobals()->setFilter($filter);
                     }
                 }
             } else {
@@ -164,10 +175,10 @@ class UtilsFunctionsNavigation
         }
 
         if ($url == "home" or $url == "index") { // @todo A terme supprimer "home" car on utilise "index" 13/07/2020
-            $url = $GLOBALS['path'];
+            $url = $this->getGlobals()->getPath();
 
             if (isset($domaine)) {
-                $url = ($domaine === true ? $GLOBALS['home'] : $domaine);
+                $url = ($domaine === true ? $this->getGlobals()->getHome() : $domaine);
             }
         } elseif (preg_match("/(http|https):\/\//", $url)) { // Si url externe on retourne l'url directement
             return $url;
@@ -175,7 +186,7 @@ class UtilsFunctionsNavigation
             $url = $this->encode($url, "-", ["#", "/"]);
 
             if (isset($domaine)) {
-                $url = ($domaine === true ? $GLOBALS['home'] : $domaine) . ltrim($url, "/");
+                $url = ($domaine === true ? $this->getGlobals()->getHome() : $domaine) . ltrim($url, "/");
             }
         }
 
@@ -186,7 +197,7 @@ class UtilsFunctionsNavigation
 
         // Si on demande le chemin absolu
         if (isset($absolu)) {
-            $url = $GLOBALS['path'] . $url;
+            $url = $this->getGlobals()->getPath() . $url;
         }
 
         return $url;
@@ -214,7 +225,7 @@ class UtilsFunctionsNavigation
             // Page 1
             ?>
                     <li class="fl mrs mbs"><a
-                                href="<?= $this->make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => "1", "domaine" => true])) ?>"
+                                href="<?= $this->make_url($res['url'], array_merge($this->getGlobals()->getFilter(), ["page" => "1", "domaine" => true])) ?>"
                                 class="bt<?= ($page == 1 ? ' selected' : ''); ?>"<?= ($page == 1 ? ' aria-current="page"' : '') ?>>1</a>
                     </li><?php
 
@@ -224,14 +235,14 @@ class UtilsFunctionsNavigation
 
                 for ($i = ($page - 1); $i <= ($page + 1) and $i < $num_page; $i++) { ?>
                             <li class="fl mrs mbs"><a
-                                        href="<?= $this->make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => $i, "domaine" => true])) ?>"
+                                        href="<?= $this->make_url($res['url'], array_merge($this->getGlobals()->getFilter(), ["page" => $i, "domaine" => true])) ?>"
                                         class="bt<?= ($page == $i ? ' selected' : ''); ?>"<?= ($page == $i ? ' aria-current="page"' : '') ?>><?= $i ?></a>
                             </li>
                         <?php }
                 } else { // - de 10 page
                     for ($i = 2; $i <= (isset($filter['full']) ? $num_page : 10) and $i < $num_page; $i++) { ?>
                             <li class="fl mrs mbs"><a
-                                        href="<?= $this->make_url($res['url'], array_merge($GLOBALS['filter'], ["page" => $i, "domaine" => true])) ?>"
+                                        href="<?= $this->make_url($res['url'], array_merge($this->getGlobals()->getFilter(), ["page" => $i, "domaine" => true])) ?>"
                                         class="bt<?= ($page == $i ? ' selected' : ''); ?>"<?= ($page == $i ? ' aria-current="page"' : '') ?>><?= $i ?></a>
                             </li>
                         <?php }
@@ -243,7 +254,7 @@ class UtilsFunctionsNavigation
             // Page final
             ?>
                     <li class="fl mrs mbs"><a
-                                href="<?= $this->make_url($res['url'], array_merge($GLOBALS['filter'], ['page' => $num_page, "domaine" => true])) ?>"
+                                href="<?= $this->make_url($res['url'], array_merge($this->getGlobals()->getFilter(), ['page' => $num_page, "domaine" => true])) ?>"
                                 class="bt<?= ($page == $num_page ? ' selected' : ''); ?>"<?= ($page == $num_page ? ' aria-current="page"' : '') ?>><?= $num_page ?></a>
                     </li><?php
 

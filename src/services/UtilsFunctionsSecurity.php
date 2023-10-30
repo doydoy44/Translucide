@@ -45,7 +45,6 @@ class UtilsFunctionsSecurity
 
     public function secure_value($value)
     {
-
         // htmlentities htmlspecialchars
         if (is_array($value)) {
             foreach ($value as $cle => $val) {

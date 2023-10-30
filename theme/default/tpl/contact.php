@@ -1,12 +1,14 @@
 <?php
 
+use Translucide\services\Globals;
 use Translucide\services\UtilsFunctionsConnexion;
 use Translucide\services\UtilsFunctionsContent;
 use Translucide\services\UtilsFunctionsLanguage;
 
-$contentFc = UtilsFunctionsContent::getInstance();
-$languageFc = UtilsFunctionsLanguage::getInstance();
-$connexion = UtilsFunctionsConnexion::getInstance();
+$globals = Globals::getInstance();
+$contentFn = UtilsFunctionsContent::getInstance();
+$languageFn = UtilsFunctionsLanguage::getInstance();
+$connexionFn = UtilsFunctionsConnexion::getInstance();
 
 switch (@$_GET['mode']) {
     // AFFICHAGE DU FORMULAIRE DE CONTACT
@@ -33,35 +35,35 @@ switch (@$_GET['mode']) {
 
             <article class="w80 center">
 
-                <?php $contentFc->h1('titre', 'tc') ?>
+                <?php $contentFn->h1('titre', 'tc') ?>
 
-                <?php $contentFc->txt('texte', 'mbl') ?>
+                <?php $contentFn->txt('texte', 'mbl') ?>
 
                 <form id="contact">
 
-                    <?php $contentFc->txt('texte-champs-obligatoires', 'mbm') ?>
+                    <?php $contentFn->txt('texte-champs-obligatoires', 'mbm') ?>
 
                     <div class="mbm">
                         <label for="email-from">
-                            <?php $contentFc->span('texte-label-email') ?>
+                            <?php $contentFn->span('texte-label-email') ?>
                             <span class="red">*</span>
                         </label>
                         <br>
                         <input type="email" name="email-from" id="email-from" autocomplete="email"
-                               placeholder="<?php $languageFc->_e("Email") ?>" class="w40 vatt" required>
+                               placeholder="<?php $languageFn->_e("Email") ?>" class="w40 vatt" required>
 
-                        <label for="reponse" class="hidden" aria-hidden="true"><?php $languageFc->_e("Email") ?></label>
+                        <label for="reponse" class="hidden" aria-hidden="true"><?php $languageFn->_e("Email") ?></label>
                         <input name="reponse" id="reponse" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$"
                                placeholder="nom@domaine.com" aria-hidden="true">
                     </div>
 
                     <div>
                         <label for="message">
-                            <?php $contentFc->span('texte-label-message') ?>
+                            <?php $contentFn->span('texte-label-message') ?>
                             <span class="red">*</span>
                         </label>
                         <textarea name="message" id="message"
-                                  placeholder="<?php $languageFc->_e("Message") ?>"
+                                  placeholder="<?php $languageFn->_e("Message") ?>"
                                   class="w100 mbt"
                                   style="height: 200px;" required>
                         </textarea>
@@ -76,14 +78,14 @@ switch (@$_GET['mode']) {
                         $nb1 = rand(1, 5); //10
                         $nb2 = ($operator === '-') ? mt_rand(1, $nb1) : mt_rand(1, 5); // on évite les résultats négatifs en cas de soustraction
                         eval('$question = strval(' . $nb1 . $operator . $nb2 . ');');
-                        $question_hash = hash('sha256', $question . $GLOBALS['pub_hash']);
+                        $question_hash = hash('sha256', $question . $globals->getPubHash());
                         // On change le signe "-" moins de calcul en "−" lisible en accessibilité
                         ?>
                         <div>
                             <label for="question">
-                                <?php $contentFc->span('texte-label-question') ?>
+                                <?php $contentFn->span('texte-label-question') ?>
                                 <span class="red">*</span> :
-                                <?= ($languageFc->__($chiffre[$nb1]) . " " . ($operator == '-' ? '−' : $operator) . " " . $languageFc->__($chiffre[$nb2])); ?>
+                                <?= ($languageFn->__($chiffre[$nb1]) . " " . ($operator == '-' ? '−' : $operator) . " " . $languageFn->__($chiffre[$nb2])); ?>
                                 =
                             </label>
                             <input type="text" name="question" id="question" placeholder="?" class="w50p tc"
@@ -95,7 +97,7 @@ switch (@$_GET['mode']) {
                         <!-- RGPD -->
                         <div class="mtm">
                             <label for="rgpdcheckbox" class="inline" style="text-transform: none;">
-                                <?php $contentFc->span('rgpd') ?>
+                                <?php $contentFn->span('rgpd') ?>
                                 <span class="red">*</span>
                             </label>
                             <input type="checkbox" name="rgpdcheckbox" id="rgpdcheckbox" required>
@@ -105,17 +107,17 @@ switch (@$_GET['mode']) {
                     <!-- Bouton envoyer -->
                     <div class="fr mtm mbl">
                         <button type="submit" id="send" class="bt bold">
-                            <?php $languageFc->_e(["Send" => ["fr" => "Envoyer"]]) ?>
+                            <?php $languageFn->_e(["Send" => ["fr" => "Envoyer"]]) ?>
                             <i class="fa fa-mail-alt mlt" aria-hidden="true"></i>
                         </button>
                     </div>
 
 
                     <input type="hidden" name="rgpd_text"
-                           value="<?= htmlspecialchars(@ $GLOBALS['content']['rgpd']); ?>">
+                           value="<?= htmlspecialchars(@ $globals->getContent()['rgpd']); ?>">
 
                     <input type="hidden" name="nonce_contact"
-                           value="<?= $connexion->nonce("nonce_contact"); ?>">
+                           value="<?= $connexionFn->nonce("nonce_contact"); ?>">
 
                     <input type="hidden" name="referer"
                            value="<?= htmlspecialchars((isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "")); ?>">
@@ -177,7 +179,7 @@ switch (@$_GET['mode']) {
             // Message d'erreur en cas de mauvaise saisie du mail. Pour l'accessibilité
             var email_from = document.getElementById("email-from");
             email_from.addEventListener("invalid", function () {
-              email_from.setCustomValidity("<?$languageFc->_e("Invalid email")?>. <?$languageFc->_e("Expected format")?> : dupont@exemple.com")
+              email_from.setCustomValidity("<?$languageFn->_e("Invalid email")?>. <?$languageFn->_e("Expected format")?> : dupont@exemple.com")
             }, false);
             email_from.addEventListener("input", function () {
               email_from.setCustomValidity("");
@@ -205,8 +207,8 @@ switch (@$_GET['mode']) {
 
             if ($_SESSION["nonce_contact"] and $_SESSION["nonce_contact"] == $_POST["nonce_contact"]) { // Protection CSRF
                 if (filter_var($_POST["email-from"], FILTER_VALIDATE_EMAIL)) { // Email valide
-                    if (hash('sha256', $_POST["question"] . $GLOBALS['pub_hash']) == $_POST["question_hash"]) { // Captcha valide
-                        $from = ($_POST["email-from"] ? htmlspecialchars($_POST["email-from"]) : $GLOBALS['email_contact']);
+                    if (hash('sha256', $_POST["question"] . $globals->getPubHash()) == $_POST["question_hash"]) { // Captcha valide
+                        $from = ($_POST["email-from"] ? htmlspecialchars($_POST["email-from"]) : $globals->getEmailContact());
 
 
                         $subject = "[" . htmlspecialchars($_SERVER['HTTP_HOST']) . "] " . htmlspecialchars($_POST["email-from"]);
@@ -229,12 +231,12 @@ switch (@$_GET['mode']) {
 
 
                         // header
-                        $header = "From:" . $GLOBALS['email_contact'] . "\r\n"; // Pour une meilleure délivrabilité des mails
+                        $header = "From:" . $globals->getEmailContact() . "\r\n"; // Pour une meilleure délivrabilité des mails
                         $header .= "Reply-To: " . $from . "\r\n";
                         $header .= "Content-Type: text/plain; charset=utf-8\r\n"; // utf-8 ISO-8859-1
 
 
-                        if (mail($GLOBALS['email_contact'], $subject, stripslashes($message), $header)) {
+                        if (mail($globals->getEmailContact(), $subject, stripslashes($message), $header)) {
                             ?>
                             <script>
                               popin(__("Message sent"), 'nofade', 'popin', $("#send"));

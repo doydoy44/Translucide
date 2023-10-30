@@ -3,6 +3,7 @@
 namespace Translucide\services;
 
 use Exception;
+use Translucide\db\DataBase;
 
 class UtilsFunctionsContent
 {
@@ -16,6 +17,8 @@ class UtilsFunctionsContent
 
     private ?UtilsFunctionsNavigation $utilsFunctionNaviation = null;
     private ?UtilsFunctionsImage $utilsFunctionsImage = null;
+    private ?Globals $globals = null;
+    private ?DataBase $dataBase = null;
 
 
     protected function __construct()
@@ -60,10 +63,26 @@ class UtilsFunctionsContent
         return $this->utilsFunctionsImage;
     }
 
+    public function getGlobals(): Globals
+    {
+        if (!$this->globals) {
+            $this->globals = Globals::getInstance();
+        }
+        return $this->globals;
+    }
+
+    public function getDatabase(): DataBase
+    {
+        if (!$this->dataBase) {
+            $this->dataBase = DataBase::getInstance();
+        }
+        return $this->dataBase;
+    }
+
     // Contenu texte
     public function txt($key = null, $filter = [])
     {
-        $key = ($key ? $key : "txt-" . $GLOBALS['editkey']);
+        $key = ($key ? $key : "txt-" . $this->getGlobals()->getEditkey());
 
         // S'il y a une valeur pour le filter mais que != tableau => c'est une class
         if (!is_array($filter)) {
@@ -72,13 +91,15 @@ class UtilsFunctionsContent
 
         // Si contenu global on rapatri le contenu depuis la table méta (Anciennement "universel")
         if (isset($filter['global'])) {
-            $sel = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_meta'] . " WHERE type='global' AND cle='" . $this->getUtilsFunctionNaviation()->encode($key) . "' LIMIT 1");
+            $sel = $this->getDatabase()->getConnect()->query("SELECT * FROM " . $this->getGlobals()->getTableMeta() . " WHERE type='global' AND cle='" . $this->getUtilsFunctionNaviation()->encode($key) . "' LIMIT 1");
             $res = $sel->fetch_assoc();
 
-             $GLOBALS['content'][$key] = $res['val'];
+            $content = $this->getGlobals()->getContent();
+            $content[$key] = $res['val'];
+            $this->getGlobals()->setContent($content);
         }
 
-        echo "<" . (isset($filter['tag']) ? $filter['tag'] : "div");
+        echo "<" . ($filter['tag'] ?? "div");
 
         echo " id='" . $this->getUtilsFunctionNaviation()->encode($key) . "'";
 
@@ -117,19 +138,19 @@ class UtilsFunctionsContent
 
         echo ">";
 
-        if (isset( $GLOBALS['content'][$key])) {
+        if (isset($this->getGlobals()->getContent()[$key])) {
             if (isset($filter['function'])) {
-                echo $filter['function']( $GLOBALS['content'][$key]);
+                echo $filter['function']($this->getGlobals()->getContent()[$key]);
             } else {
-                echo  $GLOBALS['content'][$key];
+                echo $this->getGlobals()->getContent()[$key];
             }
         } elseif (isset($filter['default'])) {
             echo $filter['default'];
         }
 
-        echo "</" . (isset($filter['tag']) ? $filter['tag'] : "div") . ">";
+        echo "</" . ($filter['tag'] ?? "div") . ">";
 
-        $GLOBALS['editkey']++;
+        $this->getGlobals()->increaseEditkey();
     }
 
 
@@ -186,22 +207,22 @@ class UtilsFunctionsContent
     // Contenu image/fichier
     public function media($key = null, $filter = [])
     {
-        $key = ($key ? $key : "file-" . $GLOBALS['editkey']);
+        $key = ($key ? $key : "file-" . $this->getGlobals()->getEditkey());
 
         // Si contenu global on rapatri le contenu depuis la table méta
         if (isset($filter['global'])) {
-            $sel = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_meta'] . " WHERE type='global' AND cle='" . $this->getUtilsFunctionNaviation()->encode($key) . "' LIMIT 1");
+            $sel = $this->getDatabase()->getConnect()->query("SELECT * FROM " . $this->getGlobals()->getTableMeta() . " WHERE type='global' AND cle='" . $this->getUtilsFunctionNaviation()->encode($key) . "' LIMIT 1");
             $res = $sel->fetch_assoc();
-
-             $GLOBALS['content'][$key] = $res['val'];
+            $content = $this->getGlobals()->getContent();
+            $content[$key] = $res['val'];
+            $this->getGlobals()->setContent($content);
         }
 
 
         // Verification de la config de https pour crée le bon chemin (on force https dans les chemins)
-        if (@$_SERVER['REQUEST_SCHEME'] == 'https' and $GLOBALS['scheme'] != 'https://') {
-            $GLOBALS['home'] = str_replace('http://', 'https://', $GLOBALS['home']);
+        if (@$_SERVER['REQUEST_SCHEME'] == 'https' and $this->getGlobals()->getScheme() != 'https://') {
+            $this->getGlobals()->setHome(str_replace('http://', 'https://', $this->getGlobals()->getHome()));
         }
-
 
         // S'il y a une valeur pour le filter mais != tableau => c'est la taille de l'image
         if (!is_array($filter)) {
@@ -214,12 +235,12 @@ class UtilsFunctionsContent
         }
 
         // Nom du fichier
-        if (isset( $GLOBALS['content'][$key]) and  $GLOBALS['content'][$key] != "") {
+        if (isset($this->getGlobals()->getContent()[$key]) and $this->getGlobals()->getContent()[$key] != "") {
             // Si c'est une url externe on pointe vers, sinon on clean et ajoute le nom du site courant
-            if (isset(parse_url( $GLOBALS['content'][$key])['scheme'])) {
-                $filename =  $GLOBALS['content'][$key];
+            if (isset(parse_url($this->getGlobals()->getContent()[$key])['scheme'])) {
+                $filename = $this->getGlobals()->getContent()[$key];
             } else {
-                $filename = $GLOBALS['home'] . ltrim( $GLOBALS['content'][$key], @(string)$GLOBALS['replace_path']);
+                $filename = $this->getGlobals()->getHome() . ltrim($this->getGlobals()->getContent()[$key], $this->getGlobals()->getReplacePath());
             }
         } else {
             $filename = "";
@@ -355,7 +376,7 @@ class UtilsFunctionsContent
                         $thumbnail_path = $pathinfo['dirname'] . "/resize/" . $pathinfo['filename'] . "-" . $thumbnail_width . "x" . $thumbnail_height . "." . $pathinfo['extension'];
                         $thumbnail_clean = parse_url($thumbnail_path, PHP_URL_PATH);
 
-                        if (file_exists($_SERVER['DOCUMENT_ROOT'] . $GLOBALS['path'] . $thumbnail_clean)) {
+                        if (file_exists($_SERVER['DOCUMENT_ROOT'] . $this->getGlobals()->getPath() . $thumbnail_clean)) {
                             $thumbnail = $thumbnail_clean;
                         } else {
                             $thumbnail = $this->getUtilsFunctionsImage()->resize($source, $thumbnail_width, $thumbnail_height);
@@ -407,8 +428,8 @@ class UtilsFunctionsContent
             }
 
             // Texte ALT
-            if (isset( $GLOBALS['content'][$key . '-alt'])) {
-                echo ' alt="' .  $GLOBALS['content'][$key . '-alt'] . '"';
+            if (isset($this->getGlobals()->getContent()[$key . '-alt'])) {
+                echo ' alt="' . $this->getGlobals()->getContent()[$key . '-alt'] . '"';
             } else {
                 echo ' alt=""';
             }
@@ -427,28 +448,30 @@ class UtilsFunctionsContent
                 echo '</a>';
             }
         } elseif (isset($video)) { // C'est une video
-            echo '<video' . (isset($size[0]) ? ' width="' . $size[0] . '"' : '') . ' src="' . $filename . '" title="' .  $GLOBALS['content'][$key] . '" preload="none" controls></video>';
+            echo '<video' . (isset($size[0]) ? ' width="' . $size[0] . '"' : '') . ' src="' . $filename . '" title="' . $this->getGlobals()->getContent()[$key] . '" preload="none" controls></video>';
         } elseif ($filename) { // C'est un fichier
-            echo '<a href="' .  $GLOBALS['content'][$key] . '" target="_blank"><i class="fa fa-fw fa-' . $fa . ' mega" title="' .  $GLOBALS['content'][$key] . '"></i></a>';
+            echo '<a href="' . $this->getGlobals()->getContent()[$key] . '" target="_blank"><i class="fa fa-fw fa-' . $fa . ' mega" title="' . $this->getGlobals()->getContent()[$key] . '"></i></a>';
         }
 
 
         echo '</span>';
 
-        $GLOBALS['editkey']++;
+        $this->getGlobals()->increaseEditkey();
     }
 
     // Image de fond de bloc
     public function bg($key = null, $filter = [])
     {
-        $key = ($key ? $key : "bg-" . $GLOBALS['editkey']);
+        $key = ($key ? $key : "bg-" . $this->getGlobals()->getEditkey());
 
         // Si contenu global on rapatri le contenu depuis la table méta
         if (isset($filter['global'])) {
-            $sel = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_meta'] . " WHERE type='global' AND cle='" . $this->getUtilsFunctionNaviation()->encode($key) . "' LIMIT 1");
+            $sel = $this->getDatabase()->getConnect()->query("SELECT * FROM " . $this->getGlobals()->getTableMeta() . " WHERE type='global' AND cle='" . $this->getUtilsFunctionNaviation()->encode($key) . "' LIMIT 1");
             $res = $sel->fetch_assoc();
 
-             $GLOBALS['content'][$key] = $res['val'];
+            $content = $this->getGlobals()->getContent();
+            $content[$key] = $res['val'];
+            $this->getGlobals()->setContent($content);
         }
 
         // Si pas d'array et qu'il y a une variable c'est que c'est un lazyload
@@ -456,7 +479,7 @@ class UtilsFunctionsContent
             $filter = ["lazy" => true];
         }
 
-        $url = (isset( $GLOBALS['content'][$key]) ? $GLOBALS['home'] . ltrim( $GLOBALS['content'][$key], @$GLOBALS['replace_path']) : "");
+        $url = (isset($this->getGlobals()->getContent()[$key]) ? $this->getGlobals()->getHome() . ltrim($this->getGlobals()->getContent()[$key], $this->getGlobals()->getReplacePath()) : "");
 
         echo " data-id='" . $this->getUtilsFunctionNaviation()->encode($key) . "' data-bg=\"" . $url . "\"";
 
@@ -475,14 +498,14 @@ class UtilsFunctionsContent
             echo ' style="background-image: url(\'' . $url . '\')"';
         }
 
-        $GLOBALS['editkey']++;
+        $this->getGlobals()->increaseEditkey();
     }
 
     // Bloc de contenu générique duplicable
     public function module($module = "module", $content = null)
     {
         if ($content == null) {
-            $content =  $GLOBALS['content'];
+            $content = $this->getGlobals()->getContent();
         }
 
         // Extrait les données module du tableau des contenu
@@ -517,7 +540,9 @@ class UtilsFunctionsContent
 
                 // Force le contenu du bloc vide duplicable (0) à vide
                 if ($num_module == 0) {
-                     $GLOBALS['content'][$key] = '';
+                    $content2 = $this->getGlobals()->getContent();
+                    $content2[$key] = '';
+                    $this->getGlobals()->setContent($content2);
                 }
 
                 //echo $key." | ".$type_module."*".$num_module."*".($num_module == 0)." : ".$content[$key]."<br>";
@@ -536,12 +561,12 @@ class UtilsFunctionsContent
     // Contenu champ checkbox
     public function checkbox($key = null, $filter = [])
     {
-        $key = ($key ? $key : "checkbox-" . $GLOBALS['editkey']);
+        $key = ($key ? $key : "checkbox-" . $this->getGlobals()->getEditkey());
 
         // fa-check/fa-close => fa-ok/fa-cancel
-        echo "<i class='" . (isset($filter['editable']) ? $filter['editable'] : "editable-checkbox") . " fa fa-fw " . ((isset( $GLOBALS['content'][$key]) and  $GLOBALS['content'][$key] == true) ? "fa-ok yes" : "fa-cancel no") . (isset($filter['class']) ? " " . $filter['class'] : "") . "' id='" . $this->getUtilsFunctionNaviation()->encode($key) . "'></i>";
+        echo "<i class='" . (isset($filter['editable']) ? $filter['editable'] : "editable-checkbox") . " fa fa-fw " . ((isset($this->getGlobals()->getContent()[$key]) and $this->getGlobals()->getContent()[$key] == true) ? "fa-ok yes" : "fa-cancel no") . (isset($filter['class']) ? " " . $filter['class'] : "") . "' id='" . $this->getUtilsFunctionNaviation()->encode($key) . "'></i>";
 
-        $GLOBALS['editkey']++;
+        $this->getGlobals()->increaseEditkey();
     }
 
     // Contenu champ radio / si checked = true => checked par défaut si pas de radio selectionné
@@ -553,7 +578,7 @@ class UtilsFunctionsContent
     // Contenu champ select
     public function select($key = null, $filter = [])
     {
-        $key = ($key ? $key : "select-" . $GLOBALS['editkey']);
+        $key = ($key ? $key : "select-" . $this->getGlobals()->getEditkey());
 
         if (!is_array($filter)) {
             $filter = ["option" => $filter];
@@ -567,9 +592,9 @@ class UtilsFunctionsContent
             $filter['option'] = json_encode($option_decode, JSON_UNESCAPED_UNICODE);
         }
 
-        if (isset( $GLOBALS['content'][$key]) and isset($option_decode[ $GLOBALS['content'][$key]])) {
-            $selected_key =  $GLOBALS['content'][$key];
-            $selected_option = $option_decode[ $GLOBALS['content'][$key]];
+        if (isset($this->getGlobals()->getContent()[$key]) and isset($option_decode[$this->getGlobals()->getContent()[$key]])) {
+            $selected_key = $this->getGlobals()->getContent()[$key];
+            $selected_option = $option_decode[$this->getGlobals()->getContent()[$key]];
         } else {
             $selected_key = key($option_decode);
             if ($selected_key) {
@@ -579,13 +604,13 @@ class UtilsFunctionsContent
 
         echo "<" . (isset($filter['tag']) ? $filter['tag'] : "span") . (isset($filter['href']) ? ' href="' . $filter['href'] . '"' : '') . " id='" . $this->getUtilsFunctionNaviation()->encode($key) . "' class='" . (isset($filter['editable']) ? $filter['editable'] : "editable-select") . (isset($filter['class']) ? " " . $filter['class'] : "") . "' data-option='" . str_ireplace("'", "&apos;", $filter['option']) . "' data-selected=\"" . $selected_key . "\">" . @$selected_option . "</" . (isset($filter['tag']) ? $filter['tag'] : "span") . ">";
 
-        $GLOBALS['editkey']++;
+        $this->getGlobals()->increaseEditkey();
     }
 
     // Contenu champ input
     public function input($key = null, $filter = null): void
     {
-        $key = ($key ? $key : "input-" . $GLOBALS['editkey']);
+        $key = ($key ? $key : "input-" . $this->getGlobals()->getEditkey());
 
         if (!is_array($filter)) {
             $filter = ["class" => $filter];
@@ -602,11 +627,11 @@ class UtilsFunctionsContent
 
         echo ' value="';
 
-        if (isset( $GLOBALS['content'][$key])) {
+        if (isset($this->getGlobals()->getContent()[$key])) {
             if (@$filter['type'] == 'number') {
-                echo str_replace(',', '.',  $GLOBALS['content'][$key]);
+                echo str_replace(',', '.', $this->getGlobals()->getContent()[$key]);
             } else {
-                echo  $GLOBALS['content'][$key];
+                echo $this->getGlobals()->getContent()[$key];
             }
         } else {
             echo @$filter['default'];
@@ -617,9 +642,9 @@ class UtilsFunctionsContent
 
         echo ' class="editable-input ' . @$filter['class'] . '"';
 
-        if ($filter['type'] == "checkbox" and @ $GLOBALS['content'][$key] == true) {
+        if ($filter['type'] == "checkbox" and $this->getGlobals()->getContent()[$key] == true) {
             echo ' checked="checked"';
-        } elseif ($filter['type'] == "radio" and @$filter['name'] and (@ $GLOBALS['content'][$filter['name']] == $key or (!@ $GLOBALS['content'][$filter['name']] and $filter['checked']))) {
+        } elseif ($filter['type'] == "radio" and @$filter['name'] and ($this->getGlobals()->getContent()[$filter['name']] == $key or (!$this->getGlobals()->getContent()[$filter['name']] and $filter['checked']))) {
             echo ' checked="checked"';
         }
 
@@ -653,25 +678,25 @@ class UtilsFunctionsContent
             </script>
         <?php }
 
-        $GLOBALS['editkey']++;
+        $this->getGlobals()->increaseEditkey();
     }
 
     // Lien éditable
     public function href($key = null, $target = null): void
     {
-        $key = ($key ? $key : "href-" . $GLOBALS['editkey']);
+        $key = ($key ? $key : "href-" . $this->getGlobals()->getEditkey());
 
-        if (isset( $GLOBALS['content'][$key])) {
-            echo 'href="' .  $GLOBALS['content'][$key] . '" ';
+        if (isset($this->getGlobals()->getContent()[$key])) {
+            echo 'href="' . $this->getGlobals()->getContent()[$key] . '" ';
         }
 
         echo 'data-href="' . $this->getUtilsFunctionNaviation()->encode($key) . '" ';
 
-        if ($target == 'file' and strstr(@ $GLOBALS['content'][$key], ".")) {
+        if ($target == 'file' and strstr($this->getGlobals()->getContent()[$key], ".")) {
             echo 'target="_blank"';
         }
 
-        $GLOBALS['editkey']++;
+        $this->getGlobals()->increaseEditkey();
     }
 
     // Tags
@@ -690,9 +715,11 @@ class UtilsFunctionsContent
             . '>';
 
         $i = 1;
-        $sel_tag = $GLOBALS['connect']->query("SELECT * FROM " . $GLOBALS['table_tag'] . " WHERE id='" . (int)$GLOBALS['id'] . "' AND zone='" . $key . "' AND lang='" . $GLOBALS['lang'] . "' ORDER BY ordre ASC LIMIT 10");
+        $sel_tag = $this->getDatabase()->getConnect()->query("SELECT * FROM " . $this->getGlobals()->getTableTag() . " WHERE id='" . (int)$this->getGlobals()->getId() . "' AND zone='" . $key . "' AND lang='" . $this->getGlobals()->getLang() . "' ORDER BY ordre ASC LIMIT 10");
         while ($res_tag = $sel_tag->fetch_assoc()) {
-            $GLOBALS['tags'][$res_tag['encode']] = $res_tag['name'];
+            $tags = $this->getGlobals()->getTags();
+            $tags[$res_tag['encode']] = $res_tag['name'];
+            $this->getGlobals()->setTags($tags);
 
             // Ajout de séparateur
             if (@$filter['tag'] != 'ul' and $i > 1) {

@@ -4,10 +4,10 @@ use Translucide\services\UtilsFunctionsLanguage;
 
 include_once(dirname(__FILE__)."/../src/services/UtilsFunctionsLanguage.php");
 
-$languageFc = UtilsFunctionsLanguage::getInstance();
+$languageFn = UtilsFunctionsLanguage::getInstance();
 
 //$lang = $language->get_lang(); // Sélectionne la langue
-$languageFc->load_translation('api'); // Chargement des traductions du système
+$languageFn->load_translation('api'); // Chargement des traductions du système
 
 switch(@$_GET['mode']) {
     // Retour Ajax

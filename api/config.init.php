@@ -23,14 +23,11 @@ if (!isset($_SESSION)) {
 
 
 // Fixe la langue
-if (strstr($_SERVER['SERVER_NAME'], 'domaine.com')) {
+if (str_contains($_SERVER['SERVER_NAME'], 'domaine.com')) {
     $lang = $_SESSION['lang'] = 'en';
 } else {
     $lang = $_SESSION['lang'] = 'fr';
 }
-
-// Langue alternative si une traduction n'existe pas
-$GLOBALS['lang_alt'] = 'en';
 
 
 // Définition de la zone horaire
@@ -47,7 +44,7 @@ if ($lang == 'fr') {
 // Serveur local ou online ? DEV || PROD
 if (
     $_SERVER['SERVER_ADDR'] == '127.0.0.1' or
-    strpos($_SERVER['SERVER_ADDR'], '::1') !== false) {
+    str_contains($_SERVER['SERVER_ADDR'], '::1')) {
     $dev = true;
 } else {
     $dev = false;

@@ -9,7 +9,7 @@ include_once(dirname(__FILE__)."/../src/services/Globals.php");
 $globals = Globals::getInstance();
 
 // Si pas de connexion, on lance l'installateur
-if (!($globals->db_server and $globals->db_user and $globals->db)) {
+if (!($globals->getDbServer() and $globals->getDbUser() and $globals->getDb())) {
     include_once("install.php");
     return;
 }

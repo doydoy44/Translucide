@@ -14,11 +14,8 @@ class UtilsFunctionsBenchMark
      */
     private static array $instances = [];
 
-    private Globals $globals;
-
     protected function __construct()
     {
-        $this->globals = Globals::getInstance();
     }
 
     protected function __clone()
@@ -47,6 +44,6 @@ class UtilsFunctionsBenchMark
     // Mesure le temps de traitement Php
     public function benchmark()
     {
-        return (microtime(true) - $this->globals->microtime);
+        return (microtime(true) - $GLOBALS['microtime']);
     }
 }

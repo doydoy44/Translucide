@@ -1,6 +1,12 @@
 <?php
 
+use Translucide\services\Globals;
+
+include_once(dirname(__FILE__)."/../src/services/Globals.php");
+
+$globals = Globals::getInstance();
+
 /********** FONCTION DU THEME **********/
-if (isset($GLOBALS['function']) and $GLOBALS['function'] != "") {
-    include_once($_SERVER["DOCUMENT_ROOT"] . $GLOBALS['path'] . "theme/" . $GLOBALS['theme'] . ($GLOBALS['theme'] ? "/" : "") . $GLOBALS['function']);
+if ($globals->getFunction() != "") {
+    include_once($_SERVER["DOCUMENT_ROOT"] . $globals->getPath() . "theme/" . $globals->getTheme() . ($globals->getTheme() ? "/" : "") . $globals->getFunction());
 }

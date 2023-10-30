@@ -58,7 +58,7 @@ class UtilsFunctionsText
         $word_cut = preg_replace('/\s+?(\S+)?$/', '', substr($texte, 0, $limit)); // /\s+?(\S+)?$/u => /u => pour l'utf8
         if (strlen($word_cut) < strlen(trim($texte))) {
             $word_cut .= $end;
-        } // Si coupure on ajoute une ponctuation à la fin
+        } // Si coupure, on ajoute une ponctuation à la fin
         return $word_cut;
     }
 

@@ -10,8 +10,8 @@ include_once("../../src/db/DataBase.php");
 include_once("../../src/services/UtilsFunctionsConnexion.php");
 include_once("../../src/services/UtilsFunctionsLanguage.php");
 
-$languageFc = UtilsFunctionsLanguage::getInstance();
-$connexion = UtilsFunctionsConnexion::getInstance();
+$languageFn = UtilsFunctionsLanguage::getInstance();
+$connexionFn = UtilsFunctionsConnexion::getInstance();
 
 //$lang = $language->get_lang(); // Sélectionne  la langue
 //$language->load_translation('api'); // Chargement des traductions du système
@@ -34,7 +34,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
         "Successful installation ! Redirection to homepage ..." => ["fr" => "Installation réussie ! Redirection vers la page d'accueil ..."]
     ];
 
-    $languageFc->add_translation($add_translation);
+    $languageFn->add_translation($add_translation);
 
 
     if (@$_POST['db_server'] and @$_POST['db_user'] and @$_POST['db']) {
@@ -70,7 +70,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
         if ($dataBase->getConnect()->query("SELECT id FROM " . $GLOBALS['table_content'])) {
             // Table déjà existante
             ?>
-        <script>light("<?php $languageFc->_e("Table already exists")?> : content");</script><?php
+        <script>light("<?php $languageFn->_e("Table already exists")?> : content");</script><?php
         } else {
             // Création de la base de données
             $dataBase->getConnect()->query("
@@ -112,7 +112,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
         if ($dataBase->getConnect()->query("SELECT id FROM " . $GLOBALS['table_meta'])) {
             // Table déjà existante
             ?>
-        <script>light("<?php $languageFc->_e("Table already exists")?> : meta");</script><?php
+        <script>light("<?php $languageFn->_e("Table already exists")?> : meta");</script><?php
         } else {
             // Création de la base de données
             $dataBase->getConnect()->query("
@@ -143,7 +143,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
         if ($dataBase->getConnect()->query("SELECT id FROM " . $GLOBALS['table_tag'])) {
             // Table déjà existante
             ?>
-        <script>light("<?php $languageFc->_e("Table already exists")?> : tag");</script><?php
+        <script>light("<?php $languageFn->_e("Table already exists")?> : tag");</script><?php
         } else {
             // Création de la base de données
             $dataBase->getConnect()->query("
@@ -175,7 +175,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
         if ($dataBase->getConnect()->query("SELECT id FROM " . $GLOBALS['table_user'])) {
             // Table déjà existante
             ?>
-        <script>light("<?php $languageFc->_e("Table already exists")?> : user");</script><?php
+        <script>light("<?php $languageFn->_e("Table already exists")?> : user");</script><?php
         } else {
             // Création de la base de données
             $dataBase->getConnect()->query("
@@ -223,7 +223,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
             ?>
         <script>
           submittable();
-          light("<?php $languageFc->_e("Wrong email")?>");
+          light("<?php $languageFn->_e("Wrong email")?>");
         </script>
         <?php
             exit;
@@ -235,10 +235,10 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
 
         // Crée un hash si pas déjà un chargé par la config maison
         if (!$GLOBALS['pub_hash']) {
-            $GLOBALS['pub_hash'] = $_POST['pub_hash'] = $connexion->make_pwd(mt_rand(32, 64), true, true);
+            $GLOBALS['pub_hash'] = $_POST['pub_hash'] = $connexionFn->make_pwd(mt_rand(32, 64), true, true);
         }
         if (!$GLOBALS['priv_hash']) {
-            $GLOBALS['priv_hash'] = $_POST['priv_hash'] = $connexion->make_pwd(mt_rand(32, 64), true, true);
+            $GLOBALS['priv_hash'] = $_POST['priv_hash'] = $connexionFn->make_pwd(mt_rand(32, 64), true, true);
         }
         if (!$GLOBALS['pwd_hash_loop']) {
             $GLOBALS['pwd_hash_loop'] = $_POST['pwd_hash_loop'] = mt_rand(60536, 65536);
@@ -257,7 +257,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
             $sql .= "state = 'active', ";
             $sql .= "auth = '" . addslashes(implode(",", array_keys($GLOBALS['auth_level'])) . $auth) . "', "; // Donne tous les droits
 
-            list($password, $unique_salt) = $connexion->hash_pwd($_POST['password']);
+            list($password, $unique_salt) = $connexionFn->hash_pwd($_POST['password']);
 
             if ($password and $unique_salt) {
                 $sql .= "password = '" . addslashes($password) . "', ";
@@ -283,7 +283,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
             }
             ?>
         <script>
-          light("<?php $languageFc->_e("User already exists : update password")?>");
+          light("<?php $languageFn->_e("User already exists : update password")?>");
         </script>
         <?php
         } else { // Création de l'utilisateur admin avec tous les droits
@@ -295,7 +295,7 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
 
             $sql .= "email = '" . addslashes($email) . "', ";
 
-            list($password, $unique_salt) = $connexion->hash_pwd($_POST['password']);
+            list($password, $unique_salt) = $connexionFn->hash_pwd($_POST['password']);
 
             if ($password and $unique_salt) {
                 $sql .= "password = '" . addslashes($password) . "', ";
@@ -403,12 +403,12 @@ if ($_SESSION['nonce'] == @$_REQUEST['nonce'] and (!$GLOBALS['db_server'] or !$G
         }
 
         // LOGIN AUTOMATIQUE
-        $connexion->login();
+        $connexionFn->login();
 
         // MESSAGE DE BIENVENUE et d'information qu'il faut créé la page d'accueil du site
         ?>
     <script>
-      light("<?php $languageFc->_e("Successful installation ! Redirection to homepage ...")?>");
+      light("<?php $languageFn->_e("Successful installation ! Redirection to homepage ...")?>");
       setTimeout(function () {
         $("#error, #highlight, #light").slideUp("slow").fadeOut(function () {
           window.location.reload(); // window.location = window.location.href;

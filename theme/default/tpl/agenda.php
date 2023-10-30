@@ -10,11 +10,11 @@ if (!$GLOBALS['domain']) {
     exit;
 }
 
-$dataBase = DataBase::getInstance();
-$contentFc = UtilsFunctionsContent::getInstance();
-$languageFc = UtilsFunctionsLanguage::getInstance();
-$navigation = UtilsFunctionsNavigation::getInstance();
 $globals = Globals::getInstance();
+$dataBase = DataBase::getInstance();
+$contentFn = UtilsFunctionsContent::getInstance();
+$languageFn = UtilsFunctionsLanguage::getInstance();
+$navigationFn = UtilsFunctionsNavigation::getInstance();
 
 ?>
 
@@ -46,17 +46,17 @@ $globals = Globals::getInstance();
 
     <div class="mw960p mod center mtm mbl">
 
-        <?php $contentFc->h2('titre-event', 'tc') ?>
+        <?php $contentFn->h2('titre-event', 'tc') ?>
 
         <div class="fl w50 tr no-small-screen">
             <span class="editable-event" id="img-illu-event">
-                <?php $contentFc->media('media-event', '425') ?>
+                <?php $contentFn->media('media-event', '425') ?>
             </span>
         </div>
 
         <div class="fl w50 mts">
             <?php
-            $sel_event = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_content . " WHERE type='event' AND lang='" . $globals->lang . "' AND state='active' ORDER BY date_insert DESC LIMIT 0, 3");
+            $sel_event = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableContent() . " WHERE type='event' AND lang='" . $globals->getLang() . "' AND state='active' ORDER BY date_insert DESC LIMIT 0, 3");
             while ($res_event = $sel_event->fetch_assoc()) {
                 $content_event = json_decode($res_event['content'], true);
                 ?>
@@ -67,7 +67,7 @@ $globals = Globals::getInstance();
                         <?php
                        $res_picto = ('article' == $res_event['type']) ? 'picto-actu.png' : 'picto-evenement.png';
                         ?>
-						<img src="/<?= @$GLOBALS['media_dir'] ?>/tpl/<?= $res_picto ?>" alt="picto <?= $res_event['type'] ?>">
+						<img src="/<?= $globals->getMediaDir() ?>/tpl/<?= $res_picto ?>" alt="picto <?= $res_event['type'] ?>">
 					</div>-->
 
                         <div class="date bold bt bg-color fl up big tc">
@@ -88,14 +88,14 @@ $globals = Globals::getInstance();
 
                         <div>
                             <h2 class="bold mod up bigger man nowrap tdn">
-                                <a href="<?= $navigation->make_url($res_event['url']); ?>"
+                                <a href="<?= $navigationFn->make_url($res_event['url']); ?>"
                                    class="tdn">
                                     <?= $res_event['title'] ?>
                                 </a>
                             </h2>
 
                             <div class="bold bt bg-color">
-                                <?php $languageFc->_e("Lire") ?>
+                                <?php $languageFn->_e("Lire") ?>
                             </div>
                         </div>
 
@@ -125,10 +125,10 @@ $globals = Globals::getInstance();
 
 <?php
 // Actu à la une
-$sel_alaune = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_meta . " WHERE type='content' AND cle='alaune' LIMIT 1");
+$sel_alaune = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableMeta() . " WHERE type='content' AND cle='alaune' LIMIT 1");
 $res_alaune = $sel_alaune->fetch_assoc();
 if (@$res_alaune['cle']) {
-    $sel_alaune = $dataBase->getConnect()->query("SELECT * FROM " . $globals->table_content . " WHERE id='" . $res_alaune['val'] . "' LIMIT 1");
+    $sel_alaune = $dataBase->getConnect()->query("SELECT * FROM " . $globals->getTableContent() . " WHERE id='" . $res_alaune['val'] . "' LIMIT 1");
     $res_alaune = $sel_alaune->fetch_assoc();
 
     $alaune_content = json_decode($res_alaune['content'], true);
@@ -136,14 +136,14 @@ if (@$res_alaune['cle']) {
     if ($res_alaune['type'] == "media") {
         $ext = pathinfo(explode("?", $alaune_content['fichier'])[0], PATHINFO_EXTENSION);
         if ($ext == "jpg") {
-            $alaune_content['bg-header'] = $GLOBALS['path'] . $alaune_content['fichier'];
+            $alaune_content['bg-header'] = $globals->getPath() . $alaune_content['fichier'];
         }
 
-        $url = $GLOBALS['path'] . $alaune_content['fichier'] . "\" target=\"_blank";
-        $link_txt = $languageFc->__("Voir le document");
+        $url = $globals->getPath() . $alaune_content['fichier'] . "\" target=\"_blank";
+        $link_txt = $languageFn->__("Voir le document");
     } else {
-        $url = $navigation->make_url($res_alaune['url']);
-        $link_txt = $languageFc->__("Lire l'article");
+        $url = $navigationFn->make_url($res_alaune['url']);
+        $link_txt = $languageFn->__("Lire l'article");
     }
 
     ?>

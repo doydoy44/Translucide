@@ -7,8 +7,8 @@ include_once(dirname(__FILE__)."/../../src/services/UtilsFunctionsLanguage.php")
 //include_once("config.init.php"); // Les variables par défaut
 //include_once("function.php"); // Fonction
 
-$languageFc = UtilsFunctionsLanguage::getInstance();
-$connexion = UtilsFunctionsConnexion::getInstance();
+$languageFn = UtilsFunctionsLanguage::getInstance();
+$connexionFn = UtilsFunctionsConnexion::getInstance();
 //
 //$lang = $language->get_lang(); // Sélectionne  la langue
 //$language->load_translation('api'); // Chargement des traductions du système
@@ -89,12 +89,12 @@ $add_translation = [
     "Configuration already created" => ["fr" => "Configuration déjà crée"]
 ];
 
-$languageFc->add_translation($add_translation);
+$languageFn->add_translation($add_translation);
 
 
 // On vérifie si la configuration est déjà créée / normalement plus utile, car on bloque plus haut le chargement de install.php directement dans l'url
 if ($GLOBALS['db_server'] or $GLOBALS['db_user'] or $GLOBALS['db']) {
-    exit('<h1>' . $languageFc->__('Configuration already created') . '</h1>');
+    exit('<h1>' . $languageFn->__('Configuration already created') . '</h1>');
 }
 
 
@@ -135,10 +135,10 @@ if (isset($GLOBALS['sitename'])) {
 header('Content-type: text/html; charset=UTF-8');
 
 ?><!DOCTYPE html>
-<html lang="<?= $languageFc->get_lang(); ?>">
+<html lang="<?= $languageFn->get_lang(); ?>">
 <head>
     <meta charset="utf-8">
-    <title><?php $languageFc->_e("Site Installation"); ?></title>
+    <title><?php $languageFn->_e("Site Installation"); ?></title>
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="about:blank">
@@ -237,14 +237,14 @@ header('Content-type: text/html; charset=UTF-8');
 </head>
 <body>
     <div class="w80 center">
-        <h1 class="tc black"><?php $languageFc->_e("Site Installation"); ?></h1>
+        <h1 class="tc black"><?php $languageFn->_e("Site Installation"); ?></h1>
         <div class="layer mod pam mbm">
             <form id="setup">
-                <input type="hidden" id="nonce" name="nonce" value="<?= $connexion->nonce("nonce"); ?>" class="w100">
+                <input type="hidden" id="nonce" name="nonce" value="<?= $connexionFn->nonce("nonce"); ?>" class="w100">
                 <ul class="unstyled">
                     <li>
                         <label class="w30">
-                            <?php $languageFc->_e("Address database"); ?>
+                            <?php $languageFn->_e("Address database"); ?>
                         </label>
                         <input type="text" id="db_server"
                                value="<?= $GLOBALS['db_server']; ?>"
@@ -253,7 +253,7 @@ header('Content-type: text/html; charset=UTF-8');
                     </li>
                     <li>
                         <label class="w30">
-                            <?php $languageFc->_e("Name of the data base"); ?>
+                            <?php $languageFn->_e("Name of the data base"); ?>
                         </label>
                         <input type="text" id="db"
                             value="<?= $GLOBALS['db']; ?>"
@@ -261,7 +261,7 @@ header('Content-type: text/html; charset=UTF-8');
                     </li>
                     <li>
                         <label class="w30">
-                            <?php $languageFc->_e("MySQL Username"); ?>
+                            <?php $languageFn->_e("MySQL Username"); ?>
                         </label>
                         <input type="text" id="db_user"
                              value="<?= $GLOBALS['db_user']; ?>"
@@ -270,7 +270,7 @@ header('Content-type: text/html; charset=UTF-8');
                     </li>
                     <li>
                         <label class="w30">
-                            <?php $languageFc->_e("MySQL User Password"); ?>
+                            <?php $languageFn->_e("MySQL User Password"); ?>
                         </label>
                         <input type="text" id="db_pwd"
                               value="<?= $GLOBALS['db_pwd']; ?>"
@@ -283,7 +283,7 @@ header('Content-type: text/html; charset=UTF-8');
                     </li>
                     <li>
                         <label class="w30">
-                            <?php $languageFc->_e("Table Prefix"); ?>
+                            <?php $languageFn->_e("Table Prefix"); ?>
                         </label>
                         <input type="text" id="db_prefix"
                                value="<?= $GLOBALS['db_prefix']; ?>"
@@ -291,7 +291,7 @@ header('Content-type: text/html; charset=UTF-8');
                     </li>
                     <li class="mtm">
                         <label class="w30 bold">
-                            <?php $languageFc->_e("Name of the site"); ?>
+                            <?php $languageFn->_e("Name of the site"); ?>
                         </label>
                         <input type="text"
                                 id="sitename"
@@ -300,7 +300,7 @@ header('Content-type: text/html; charset=UTF-8');
                     </li>
                     <li>
                         <label class="w30">
-                            <?php $languageFc->_e("Site theme"); ?>
+                            <?php $languageFn->_e("Site theme"); ?>
                         </label>
                         <select id="theme" class="vatt">
                             <?php
@@ -321,7 +321,7 @@ header('Content-type: text/html; charset=UTF-8');
                         </select>
                     </li>
                     <li>
-                        <label class="w30"><?php $languageFc->_e("Site Location"); ?></label>
+                        <label class="w30"><?php $languageFn->_e("Site Location"); ?></label>
                         <input type="text" id="scheme_domain_path"
                                 value="<?= $scheme_domain_path; ?>"
                                 required class="w60 vatt">
@@ -329,7 +329,7 @@ header('Content-type: text/html; charset=UTF-8');
 
                     <li class="mtm">
                         <label class="w30 bold">
-                            <i class="fa fa-fw fa-globe"></i> <?php $languageFc->_e("Administrator email"); ?>
+                            <i class="fa fa-fw fa-globe"></i> <?php $languageFn->_e("Administrator email"); ?>
                         </label>
                         <input type="email" id="email_contact" value="<?= $GLOBALS['email_contact']; ?>" required
                                 maxlength="100" class="w60 vatt" autocomplete="username">
@@ -337,13 +337,13 @@ header('Content-type: text/html; charset=UTF-8');
                     </li>
                     <li>
                         <label class="w30 bold">
-                            <i class="fa fa-fw fa-key"></i> <?php $languageFc->_e("Administrator password"); ?>
+                            <i class="fa fa-fw fa-key"></i> <?php $languageFn->_e("Administrator password"); ?>
                         </label>
                         <input type="password" id="password" required class="w60 vatt">
                         <!--  autocomplete="current-password" -->
 
                         <a href="javascript:$('#setup #password').make_password();"
-                           title="<?php $languageFc->_e("Suggest a password"); ?>" class="tdn">
+                           title="<?php $languageFn->_e("Suggest a password"); ?>" class="tdn">
                             <i class="fa fa-fw fa-arrows-cw mts vam"></i>
                         </a>
                         <a href="javascript:void(0);"
@@ -351,16 +351,16 @@ header('Content-type: text/html; charset=UTF-8');
                            tabindex="-1">
                             <i class="fa fa-fw fa-eye mts vam"></i>
                         </a>
-                        <!-- <a href="javascript:void(0);" onclick="$('#setup #password').make_password();" title="<?php $languageFc->_e("Suggest a password"); ?>"><i class="fa fa-fw fa-arrows-cw mts vam"></i></a> -->
+                        <!-- <a href="javascript:void(0);" onclick="$('#setup #password').make_password();" title="<?php $languageFn->_e("Suggest a password"); ?>"><i class="fa fa-fw fa-arrows-cw mts vam"></i></a> -->
                     </li>
                     <!--
-                                <li class="mtl bold"><?php $languageFc->_e("Option"); ?></li>
+                                <li class="mtl bold"><?php $languageFn->_e("Option"); ?></li>
 
-                                <li><label class="w30"><i class="fa fa-fw fa-line-chart"></i> <?php $languageFc->_e("Google analytics code"); ?></label> <input type="text" id="google_analytics" placeholder="UA-00000000-1" class="w20 vatt"></li>
+                                <li><label class="w30"><i class="fa fa-fw fa-line-chart"></i> <?php $languageFn->_e("Google analytics code"); ?></label> <input type="text" id="google_analytics" placeholder="UA-00000000-1" class="w20 vatt"></li>
                                  -->
                 </ul>
                 <button class="fr mam bold">
-                    <?php $languageFc->_e("Start installation"); ?>
+                    <?php $languageFn->_e("Start installation"); ?>
                     <i class="fa fa-fw fa-cog"></i>
                 </button>
             </form>
